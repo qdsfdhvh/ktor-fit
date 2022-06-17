@@ -36,7 +36,7 @@ kotlin {
 }
 
 group = "io.github.qdsfdhvh"
-version = "1.0.0"
+version = "1.0.1"
 
 ext {
     val publishPropFile = rootProject.file("publish.properties")

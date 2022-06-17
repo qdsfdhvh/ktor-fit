@@ -1,4 +1,4 @@
-@file:OptIn(KspExperimental::class, KotlinPoetKspPreview::class)
+@file:OptIn(KspExperimental::class)
 
 package io.github.seiko.ktorfit
 
@@ -24,7 +24,6 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
-import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo

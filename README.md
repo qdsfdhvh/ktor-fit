@@ -1,5 +1,5 @@
 # ktor-fit
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.qdsfdhvh/ktor-fit/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.qdsfdhvh/ktor-fit)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.qdsfdhvh/ktor-fit-annotation/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.qdsfdhvh/ktor-fit-annotation)
 
 use ktor like retrofit.
 
