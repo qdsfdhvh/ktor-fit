@@ -6,12 +6,6 @@ pluginManagement {
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
-
-    plugins {
-        kotlin("multiplatform").version("1.6.21")
-        id("com.android.application").version("7.2.0")
-        id("com.android.library").version("7.2.0")
-    }
 }
 
 rootProject.name = "ktor-fit"

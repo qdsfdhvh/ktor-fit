@@ -45,3 +45,5 @@ bin/
 ### Publishing ###
 secring.gpg
 publish.properties
+
+docs
