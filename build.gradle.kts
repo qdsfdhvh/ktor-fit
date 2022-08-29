@@ -17,7 +17,7 @@ allprojects {
     }
 
     group = "io.github.qdsfdhvh"
-    version = "1.0.3"
+    version = "1.0.4"
 
     tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
         dokkaSourceSets.configureEach {
