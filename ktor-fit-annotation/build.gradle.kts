@@ -9,9 +9,6 @@ plugins {
 }
 
 kotlin {
-    android {
-        publishLibraryVariants("debug", "release")
-    }
     jvm()
     ios()
     iosSimulatorArm64()
