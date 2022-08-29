@@ -222,7 +222,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         function.parameters.forEach { parameter ->
             parameter.getAnnotationsByType(Path::class).firstOrNull()?.let {
                 finalUrl = finalUrl.replace(
-                    "{${it.value}}",
+                    "{${it.value.ifEmpty { parameter.shoreName }}}",
                     "\${${encode(parameter.shoreName, parameter.type.isString && it.encoded)}}"
                 )
             }
@@ -243,7 +243,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                 functionBuilder.addStatement(
                     "%T(%S, %L)",
                     parameterClass,
-                    it.value,
+                    it.value.ifEmpty { parameter.shoreName },
                     encode(parameter.shoreName, parameter.type.isString && it.encoded)
                 )
                 return@forEach
@@ -281,7 +281,10 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         function.parameters.forEach { parameter ->
             parameter.getAnnotationsByType(Header::class).firstOrNull()?.let {
                 functionBuilder.addStatement(
-                    "%T(%S, %L)", headerClass, it.value, parameter.shoreName
+                    "%T(%S, %L)",
+                    headerClass,
+                    it.value,
+                    parameter.shoreName
                 )
                 return@forEach
             }
@@ -301,7 +304,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     ) {
         function.parameters.forEach { parameter ->
             parameter.getAnnotationsByType(Body::class).firstOrNull()?.let {
-
                 functionBuilder.addStatement("%T(%L)", setBody, parameter.shoreName)
                 return
             }

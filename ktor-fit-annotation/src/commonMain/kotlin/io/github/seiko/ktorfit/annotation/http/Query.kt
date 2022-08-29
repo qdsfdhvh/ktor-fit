@@ -18,4 +18,4 @@ package io.github.seiko.ktorfit.annotation.http
  * @param encoded true means that this value is already URL encoded and will not be encoded again
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class Query(val value: String, val encoded: Boolean = false)
+annotation class Query(val value: String = "", val encoded: Boolean = false)

@@ -8,6 +8,7 @@ internal val HttpMethod = ClassName("io.ktor.http", "HttpMethod")
 internal val Parameters = ClassName("io.ktor.http", "Parameters")
 internal val takeFrom = ClassName("io.ktor.http", "takeFrom")
 internal val parseQueryString = ClassName("io.ktor.http", "parseQueryString")
+internal val contentType = ClassName("io.ktor.http", "contentType")
 
 internal val body = ClassName("io.ktor.client.call", "body")
 
