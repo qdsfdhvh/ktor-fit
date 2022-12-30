@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    id("com.google.devtools.ksp").version("1.6.21-1.0.5")
+    id("com.google.devtools.ksp").version("1.8.0-1.0.8")
 }
 
 kotlin {
@@ -13,7 +13,7 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     ios()
-    js {
+    js(BOTH) {
         browser()
         nodejs()
     }
@@ -21,7 +21,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(projects.ktorFitAnnotation)
-                val ktorVersion = "2.0.2"
+                val ktorVersion = "2.2.1"
                 implementation("io.ktor:ktor-client-serialization:$ktorVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")

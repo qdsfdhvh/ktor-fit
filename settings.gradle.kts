@@ -4,7 +4,6 @@ pluginManagement {
         google()
         gradlePluginPortal()
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
 
@@ -13,7 +12,7 @@ rootProject.name = "ktor-fit"
 include(
     ":ktor-fit-annotation",
     ":ktor-fit-ksp",
-    "sample",
+    ":sample",
 )
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

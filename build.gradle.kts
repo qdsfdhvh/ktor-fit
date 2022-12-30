@@ -2,11 +2,10 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.SonatypeHost
 
 plugins {
-    id("com.android.application") version "7.2.0" apply false
-    id("com.android.library") version "7.2.0" apply false
-    kotlin("multiplatform") version "1.6.21" apply false
-    id("org.jetbrains.dokka") version "1.6.21" apply false
-    id("com.vanniktech.maven.publish") version "0.20.0" apply false
+    id("com.android.application") version "7.3.1" apply false
+    id("com.android.library") version "7.3.1" apply false
+    kotlin("multiplatform") version "1.8.0" apply false
+    id("com.vanniktech.maven.publish") version "0.23.0" apply false
 }
 
 allprojects {
