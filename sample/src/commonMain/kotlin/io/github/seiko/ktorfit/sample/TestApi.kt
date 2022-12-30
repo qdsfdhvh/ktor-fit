@@ -12,10 +12,7 @@ import io.github.seiko.ktorfit.annotation.http.Streaming
 import io.ktor.client.HttpClient
 import io.ktor.client.statement.HttpStatement
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-@GenerateApi
-expect class TestApi(client: HttpClient, baseUrl: String) {
-
+interface TestApi {
     @GET("path/{id}")
     suspend fun testGet(
         @Path("id") id: String,
@@ -33,4 +30,24 @@ expect class TestApi(client: HttpClient, baseUrl: String) {
     @Streaming
     @GET("stream")
     suspend fun testStream(): HttpStatement
+}
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+@GenerateApi
+expect class TestApiWithBaseUrl(client: HttpClient, baseUrl: String) {
+    @GET("path/{id}")
+    suspend fun test11(
+        @Path("id") id: String,
+        @Query("name") name: String,
+    ): String
+}
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+@GenerateApi
+expect class TestApiNoBaseUrl(client: HttpClient) {
+    @GET("path/{id}")
+    suspend fun test11(
+        @Path("id") id: String,
+        @Query("name") name: String,
+    ): String
 }
