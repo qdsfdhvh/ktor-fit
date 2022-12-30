@@ -4,7 +4,6 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.dokka")
     id("com.vanniktech.maven.publish.base")
 }
 
@@ -16,5 +15,5 @@ dependencies {
 
 @Suppress("UnstableApiUsage")
 configure<MavenPublishBaseExtension> {
-    configure(KotlinJvm(javadocJar = JavadocJar.Dokka("dokkaGfm")))
+    configure(KotlinJvm())
 }

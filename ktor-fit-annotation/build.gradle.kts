@@ -4,7 +4,6 @@ import com.vanniktech.maven.publish.MavenPublishBaseExtension
 
 plugins {
     kotlin("multiplatform")
-    id("org.jetbrains.dokka")
     id("com.vanniktech.maven.publish.base")
 }
 
@@ -28,5 +27,5 @@ kotlin {
 
 @Suppress("UnstableApiUsage")
 configure<MavenPublishBaseExtension> {
-    configure(KotlinMultiplatform(JavadocJar.Dokka("dokkaGfm")))
+    configure(KotlinMultiplatform())
 }

@@ -19,21 +19,6 @@ allprojects {
     group = "io.github.qdsfdhvh"
     version = "1.0.4"
 
-    tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
-        dokkaSourceSets.configureEach {
-            reportUndocumented.set(false)
-            skipDeprecated.set(true)
-            jdkVersion.set(8)
-            perPackageOption {
-                matchingRegex.set("app\\.cash\\.zipline\\.internal\\.*")
-                suppress.set(true)
-            }
-        }
-        if (name == "dokkaGfm") {
-            outputDirectory.set(project.file("${project.rootDir}/docs/0.x"))
-        }
-    }
-
     plugins.withId("com.vanniktech.maven.publish.base") {
         @Suppress("UnstableApiUsage")
         configure<MavenPublishBaseExtension> {
