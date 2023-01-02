@@ -179,6 +179,8 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         isOverride: Boolean,
     ) {
         val functionName = function.qualifiedName?.getShortName() ?: return
+        val (method, url) = getHttpMethodAndUrl(function) ?: return
+
         val functionBuilder = FunSpec.builder(functionName)
 
         functionBuilder.addModifiers(if (isOverride) KModifier.OVERRIDE else KModifier.ACTUAL)
@@ -207,7 +209,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         val request = if (isStreaming) prepareRequest else request
 
         functionBuilder.withControlFlow("val result = %L.%T", clientName, request) {
-            val (method, url) = getHttpMethodAndUrl(function)
             functionBuilder.addStatement("method = %T.parse(%S)", HttpMethod, method)
             generateUrlAndParams(functionBuilder, function, baseUrlName, url)
             generateHeaders(functionBuilder, function)
@@ -401,7 +402,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     }
 }
 
-private fun getHttpMethodAndUrl(function: KSFunctionDeclaration): Pair<String, String> {
+private fun getHttpMethodAndUrl(function: KSFunctionDeclaration): Pair<String, String>? {
     function.getAnnotationsByType(GET::class).firstOrNull()?.let {
         return "GET" to it.value
     }
@@ -426,10 +427,7 @@ private fun getHttpMethodAndUrl(function: KSFunctionDeclaration): Pair<String, S
     function.getAnnotationsByType(HTTP::class).firstOrNull()?.let {
         return it.method to it.path
     }
-    error {
-        "unknown httpMethod in function " +
-            "with: ${function.packageName.asString()} ${function.qualifiedName?.getShortName()}"
-    }
+    return null
 }
 
 private fun FunSpec.Builder.withControlFlow(
