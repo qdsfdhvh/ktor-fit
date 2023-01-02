@@ -21,7 +21,7 @@ allprojects {
     plugins.withId("com.vanniktech.maven.publish.base") {
         @Suppress("UnstableApiUsage")
         configure<MavenPublishBaseExtension> {
-            publishToMavenCentral(SonatypeHost.S01)
+            publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
             signAllPublications()
             pom {
                 description.set("use ktor like retrofit.")
