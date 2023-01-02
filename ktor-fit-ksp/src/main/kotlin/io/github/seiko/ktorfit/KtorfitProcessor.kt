@@ -52,6 +52,7 @@ import io.github.seiko.ktorfit.annotation.http.QueryName
 import io.github.seiko.ktorfit.annotation.http.ReqBuilder
 import io.github.seiko.ktorfit.annotation.http.Streaming
 import io.github.seiko.ktorfit.annotation.http.Url
+import com.squareup.kotlinpoet.ANY
 
 class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
@@ -102,6 +103,10 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         val classBuilder = TypeSpec.classBuilder(className)
         generateClassConstructor(classBuilder, classDeclaration)
 
+        val superType = classDeclaration.superTypes
+            .filterNot { it.toTypeName() == ANY }
+
+
         classDeclaration.getDeclaredFunctions().forEach { function ->
             generateFunction(
                 classBuilder = classBuilder,
@@ -111,7 +116,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                 isOverride = false,
             )
         }
-        classDeclaration.superTypes
+        superType
             .mapNotNull {
                 it.resolve().declaration as? KSClassDeclaration
             }
@@ -137,7 +142,9 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
 
         fileBuilder.addType(
             classBuilder
-                .addSuperinterfaces(classDeclaration.superTypes.map { it.toTypeName() }.toList())
+                .addSuperinterfaces(
+                    superType.map { it.toTypeName() }.toList()
+                )
                 .addModifiers(KModifier.ACTUAL)
                 .build()
         )
