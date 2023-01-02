@@ -42,15 +42,34 @@ Create a kotlin expect class
 ```kotlin
 // @Suppress("NO_ACTUAL_FOR_EXPECT")
 @GenerateApi
-expect class TestApi(client: HttpClient, baseUrl: String) {
+expect class TestApi(client: HttpClient, /* baseUrl: String */) /* : TestOtherApi1, TestOtherApi2 */ {
     @GET("get/{id}")
     suspend fun getData(@Path("id") id: String, @Query("name") name: String): String
 }
+
+// interface TestOtherApi1 {
+//     @GET("get1/{id}")
+//     suspend fun getOtherData1(): String
+// }
+//
+// interface TestOtherApi2 {
+//     @GET("get2/{id}")
+//     suspend fun getOtherData2(): String
+// }
 ```
 
 And then create api
 
 ```kotlin
+val client = HttpClient {
+    defaultRequest {
+        url("https://example.api/")
+    }
+}
+val api = TestApi(client)
+
+// == OR ==
+
 val client = HttpClient()
 val api = TestApi(client, "https://example.api/")
 ```
