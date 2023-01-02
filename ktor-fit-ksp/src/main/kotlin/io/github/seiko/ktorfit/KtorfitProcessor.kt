@@ -108,8 +108,24 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                 function = function,
                 clientName = clientName,
                 baseUrlName = baseUrlName,
+                isOverride = false,
             )
         }
+        classDeclaration.superTypes
+            .mapNotNull {
+                it.resolve().declaration as? KSClassDeclaration
+            }
+            .forEach {
+                it.getDeclaredFunctions().forEach { function ->
+                    generateFunction(
+                        classBuilder = classBuilder,
+                        function = function,
+                        clientName = clientName,
+                        baseUrlName = baseUrlName,
+                        isOverride = true,
+                    )
+                }
+            }
 
         if (classDeclaration.modifiers.isNotEmpty()) {
             classBuilder.addModifiers(
@@ -121,6 +137,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
 
         fileBuilder.addType(
             classBuilder
+                .addSuperinterfaces(classDeclaration.superTypes.map { it.toTypeName() }.toList())
                 .addModifiers(KModifier.ACTUAL)
                 .build()
         )
@@ -159,10 +176,12 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         function: KSFunctionDeclaration,
         clientName: String,
         baseUrlName: String?,
+        isOverride: Boolean,
     ) {
         val functionName = function.qualifiedName?.getShortName() ?: return
         val functionBuilder = FunSpec.builder(functionName)
 
+        functionBuilder.addModifiers(if (isOverride) KModifier.OVERRIDE else KModifier.ACTUAL)
         if (function.modifiers.isNotEmpty()) {
             functionBuilder.addModifiers(
                 function.modifiers.mapNotNull {
@@ -203,7 +222,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
 
         classBuilder.addFunction(
             functionBuilder
-                .addModifiers(KModifier.ACTUAL)
                 .build()
         )
     }

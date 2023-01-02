@@ -34,8 +34,8 @@ interface TestApi {
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 @GenerateApi
-expect class TestApiWithBaseUrl(client: HttpClient, baseUrl: String) {
-    @GET("path/{id}")
+expect class TestApiWithBaseUrl(client: HttpClient, baseUrl: String) : TestApi {
+    @GET("path11/{id}")
     suspend fun test11(
         @Path("id") id: String,
         @Query("name") name: String,
@@ -44,8 +44,8 @@ expect class TestApiWithBaseUrl(client: HttpClient, baseUrl: String) {
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 @GenerateApi
-expect class TestApiNoBaseUrl(client: HttpClient) {
-    @GET("path/{id}")
+expect class TestApiNoBaseUrl(client: HttpClient) : TestApi {
+    @GET("path11/{id}")
     suspend fun test11(
         @Path("id") id: String,
         @Query("name") name: String,
