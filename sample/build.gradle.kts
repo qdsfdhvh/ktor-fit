@@ -1,6 +1,7 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     kotlin("multiplatform")
-    id("com.google.devtools.ksp").version("1.7.20-1.0.8")
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -21,10 +22,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(projects.ktorFitAnnotation)
-                val ktorVersion = "2.2.1"
-                implementation("io.ktor:ktor-client-serialization:$ktorVersion")
-                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+                implementation(libs.bundles.ktor)
             }
         }
         val jvmMain by getting {
