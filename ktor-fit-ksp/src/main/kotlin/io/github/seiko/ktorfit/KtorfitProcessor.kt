@@ -16,7 +16,7 @@ import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.KSValueParameter
-import com.google.devtools.ksp.validate
+import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -52,25 +52,24 @@ import io.github.seiko.ktorfit.annotation.http.QueryName
 import io.github.seiko.ktorfit.annotation.http.ReqBuilder
 import io.github.seiko.ktorfit.annotation.http.Streaming
 import io.github.seiko.ktorfit.annotation.http.Url
-import com.squareup.kotlinpoet.ANY
 
 class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
     private val codeGenerator: CodeGenerator = environment.codeGenerator
 
+    companion object {
+        private val GENERATE_API_ANNOTATION_NAME =
+            requireNotNull(GenerateApi::class.qualifiedName) { "Can not get qualifiedName for GenerateApi" }
+    }
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver
-            .getSymbolsWithAnnotation(
-                GenerateApi::class.qualifiedName
-                    ?: throw CloneNotSupportedException("Can not get qualifiedName for GenerateApi")
-            )
+            .getSymbolsWithAnnotation(GENERATE_API_ANNOTATION_NAME)
             .filterIsInstance<KSClassDeclaration>()
 
-        val ret = symbols.filter { !it.validate() }.toList()
         symbols
-            .filter { it.validate() }
             .forEach { generateFile(it) }
-        return ret
+        return emptyList()
     }
 
     private fun generateFile(classDeclaration: KSClassDeclaration) {
