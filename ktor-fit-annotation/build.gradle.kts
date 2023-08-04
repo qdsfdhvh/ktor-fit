@@ -1,6 +1,3 @@
-import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.MavenPublishBaseExtension
-
 plugins {
     kotlin("multiplatform")
     id("com.vanniktech.maven.publish.base")
@@ -22,9 +19,4 @@ kotlin {
         browser()
         nodejs()
     }
-}
-
-@Suppress("UnstableApiUsage")
-configure<MavenPublishBaseExtension> {
-    configure(KotlinMultiplatform())
 }
