@@ -24,14 +24,12 @@ kotlin {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
+    // add("kspCommonMainMetadata", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
     add("kspJvm", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
-    // add("kspJvmTest", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
-    // add("kspLinuxX64", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
     // add("kspMacosX64", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
-    // add("kspWatchosX64", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
     // add("kspIosX64", "io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
     // add("kspJs","io.github.qdsfdhvh:ktor-fit-ksp:$ktorfit_version")
+    //...
 }
 ```
 
@@ -42,7 +40,7 @@ Create a kotlin expect class
 ```kotlin
 // @Suppress("NO_ACTUAL_FOR_EXPECT")
 @GenerateApi
-expect class TestApi(client: HttpClient, /* baseUrl: String */) /* : TestOtherApi1, TestOtherApi2 */ {
+expect class TestService(client: HttpClient, /* baseUrl: String */) /* : TestOtherApi1, TestOtherApi2 */ {
     @GET("get/{id}")
     suspend fun getData(@Path("id") id: String, @Query("name") name: String): String
 }
@@ -66,12 +64,7 @@ val client = HttpClient {
         url("https://example.api/")
     }
 }
-val api = TestApi(client)
-
-// == OR ==
-
-val client = HttpClient()
-val api = TestApi(client, "https://example.api/")
+val api = TestService(client)
 ```
 
 ## Thx
