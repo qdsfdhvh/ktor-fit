@@ -57,17 +57,19 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
 
     private val codeGenerator: CodeGenerator = environment.codeGenerator
 
+    private var invoke = false
+
     companion object {
         private val GENERATE_API_ANNOTATION_NAME =
             requireNotNull(GenerateApi::class.qualifiedName) { "Can not get qualifiedName for GenerateApi" }
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val symbols = resolver
+        if (invoke) return emptyList()
+        invoke = true
+        resolver
             .getSymbolsWithAnnotation(GENERATE_API_ANNOTATION_NAME)
             .filterIsInstance<KSClassDeclaration>()
-
-        symbols
             .forEach { generateFile(it) }
         return emptyList()
     }
@@ -82,7 +84,10 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         fileBuilder
             .addImport("io.ktor.http", "encodeURLPath")
             .build()
-            .writeTo(codeGenerator, Dependencies(true))
+            .writeTo(
+                codeGenerator = codeGenerator,
+                dependencies = Dependencies(true, classDeclaration.containingFile!!)
+            )
     }
 
     private fun generateClass(
@@ -344,6 +349,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                                     encode(parameter.shoreName, it.encoded)
                                 )
                             }
+
                             parameter.type.isStringNullable -> {
                                 functionBuilder.addStatement(
                                     "if (%L != null) append(%S, %L)",
@@ -352,6 +358,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                                     encode(parameter.shoreName, it.encoded)
                                 )
                             }
+
                             parameter.type.isArray || parameter.type.isList -> {
                                 functionBuilder.addStatement(
                                     "append(%S, %S.joinToString { %L })",
@@ -360,6 +367,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                                     encode("it", it.encoded)
                                 )
                             }
+
                             parameter.type.isArrayNullable || parameter.type.isListNullable -> {
                                 functionBuilder.addStatement(
                                     "append(%S, %S.joinToString { if (it != null) %L ?: \"\" })",
@@ -368,6 +376,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                                     encode("it", it.encoded)
                                 )
                             }
+
                             else -> Unit
                         }
                     }
@@ -439,7 +448,7 @@ private fun getHttpMethodAndUrl(function: KSFunctionDeclaration): Pair<String, S
 private fun FunSpec.Builder.withControlFlow(
     controlFlow: String,
     vararg args: Any,
-    block: () -> Unit
+    block: () -> Unit,
 ) {
     beginControlFlow(controlFlow, *args)
     block()
