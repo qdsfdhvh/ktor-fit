@@ -32,19 +32,17 @@ interface TestApi {
     suspend fun testStream(): HttpStatement
 }
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-@GenerateApi
-expect class TestApiWithBaseUrl(client: HttpClient, baseUrl: String) : TestApi {
-    @GET("path11/{id}")
-    suspend fun test11(
-        @Path("id") id: String,
-        @Query("name") name: String,
+interface TestApi2 {
+
+    @POST("user/write")
+    suspend fun userUserLogo(
+        @Query("logo") logo: String,
     ): String
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 @GenerateApi
-expect class TestApiNoBaseUrl(client: HttpClient) : TestApi {
+expect class TestApiNoService(client: HttpClient) : TestApi, TestApi2 {
     @GET("path11/{id}")
     suspend fun test11(
         @Path("id") id: String,

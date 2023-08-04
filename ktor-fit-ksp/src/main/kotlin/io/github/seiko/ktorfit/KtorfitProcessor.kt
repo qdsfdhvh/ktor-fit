@@ -101,9 +101,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             "Class constructor must include HttpClient"
         }
 
-        val baseUrlName = classDeclaration.primaryConstructor?.parameters
-            ?.firstOrNull { it.type.isString }?.name?.getShortName()
-
         val classBuilder = TypeSpec.classBuilder(className)
         generateClassConstructor(classBuilder, classDeclaration)
 
@@ -116,7 +113,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                 classBuilder = classBuilder,
                 function = function,
                 clientName = clientName,
-                baseUrlName = baseUrlName,
                 isOverride = false,
             )
         }
@@ -130,7 +126,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                         classBuilder = classBuilder,
                         function = function,
                         clientName = clientName,
-                        baseUrlName = baseUrlName,
                         isOverride = true,
                     )
                 }
@@ -186,7 +181,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
         classBuilder: TypeSpec.Builder,
         function: KSFunctionDeclaration,
         clientName: String,
-        baseUrlName: String?,
         isOverride: Boolean,
     ) {
         val functionName = function.qualifiedName?.getShortName() ?: return
@@ -221,7 +215,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
 
         functionBuilder.withControlFlow("val result = %L.%T", clientName, request) {
             functionBuilder.addStatement("method = %T.parse(%S)", HttpMethod, method)
-            generateUrlAndParams(functionBuilder, function, baseUrlName, url)
+            generateUrlAndParams(functionBuilder, function, url)
             generateHeaders(functionBuilder, function)
             generateBody(functionBuilder, function)
         }
@@ -241,7 +235,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     private fun generateUrlAndParams(
         functionBuilder: FunSpec.Builder,
         function: KSFunctionDeclaration,
-        baseUrlName: String?,
         url: String,
     ) {
         // Path
@@ -260,8 +253,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
             function.parameters.firstOrNull { it.isAnnotationPresent(Url::class) }
         if (urlParameter != null) {
             functionBuilder.addStatement("%T(%S)", urlClass, urlParameter.shoreName)
-        } else if (baseUrlName != null) {
-            functionBuilder.addStatement("%T(%L + \"%L\")", urlClass, baseUrlName, finalUrl)
         } else {
             functionBuilder.addStatement("%T(\"%L\")", urlClass, finalUrl)
         }
