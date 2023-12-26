@@ -1,9 +1,8 @@
 [versions]
 agp = "8.2.0"
-kotlin = "1.8.20"
-ksp = "1.8.20-1.0.11"
+kotlin = "1.9.21"
+ksp = "1.9.21-1.0.16"
 kotlinpoet = "1.14.2"
-precompose = "1.5.0-beta01"
 publish = "0.25.3"
 spotless = "6.20.0"
 ktlint = "0.49.1"
