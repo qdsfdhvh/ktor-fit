@@ -11,6 +11,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(compose.runtime)
+                implementation(compose.material3)
                 implementation(projects.ktorFitAnnotation)
                 implementation(libs.bundles.ktor)
                 implementation(libs.ktor.client.okhttp)
@@ -18,8 +20,14 @@ kotlin {
         }
         androidMain {
             dependencies {
-                implementation(compose.material3)
                 implementation("androidx.activity:activity-compose:1.9.0-alpha01")
+            }
+        }
+    }
+    targets.all {
+        compilations.all {
+            compilerOptions.configure {
+                freeCompilerArgs.add("-Xexpect-actual-classes")
             }
         }
     }
