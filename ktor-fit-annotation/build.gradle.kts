@@ -29,4 +29,5 @@ kotlin {
         browser()
         nodejs()
     }
+    jvmToolchain(17)
 }

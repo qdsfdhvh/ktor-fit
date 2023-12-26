@@ -40,6 +40,7 @@ kotlin {
             kotlin.srcDir("build/generated/ksp/jvm/jvmMain/kotlin")
         }
     }
+    jvmToolchain(17)
 }
 
 dependencies {
