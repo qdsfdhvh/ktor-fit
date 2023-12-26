@@ -20,12 +20,12 @@ kotlin {
     watchosArm64()
     watchosDeviceArm64()
     watchosSimulatorArm64()
-    js(IR) {
+    js {
         browser()
         nodejs()
     }
     @Suppress("OPT_IN_USAGE")
-    wasm {
+    wasmJs {
         browser()
         nodejs()
     }
