@@ -22,6 +22,7 @@ include(
     ":ktor-fit-annotation",
     ":ktor-fit-ksp",
     ":sample",
+    ":sample-android",
 )
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
