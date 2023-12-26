@@ -53,11 +53,10 @@ import io.github.seiko.ktorfit.annotation.http.ReqBuilder
 import io.github.seiko.ktorfit.annotation.http.Streaming
 import io.github.seiko.ktorfit.annotation.http.Url
 
+@OptIn(KspExperimental::class)
 class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
     private val codeGenerator: CodeGenerator = environment.codeGenerator
-
-    private var invoke = false
 
     companion object {
         private val GENERATE_API_ANNOTATION_NAME =
@@ -65,11 +64,10 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        if (invoke) return emptyList()
-        invoke = true
         resolver
             .getSymbolsWithAnnotation(GENERATE_API_ANNOTATION_NAME)
             .filterIsInstance<KSClassDeclaration>()
+            .filter { it.isExpect }
             .forEach { generateFile(it) }
         return emptyList()
     }
@@ -145,6 +143,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
                     superType.map { it.toTypeName() }.toList()
                 )
                 .addModifiers(KModifier.ACTUAL)
+                .addAnnotation(GenerateApi::class)
                 .build()
         )
     }
@@ -408,6 +407,7 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     }
 }
 
+@OptIn(KspExperimental::class)
 private fun getHttpMethodAndUrl(function: KSFunctionDeclaration): Pair<String, String>? {
     function.getAnnotationsByType(GET::class).firstOrNull()?.let {
         return "GET" to it.value
