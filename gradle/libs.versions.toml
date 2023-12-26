@@ -6,7 +6,7 @@ kotlinpoet = "1.14.2"
 publish = "0.25.3"
 spotless = "6.23.3"
 ktlint = "0.49.1"
-ktor = "2.3.3"
+ktor = "2.3.7"
 compose-multiplatform = "1.5.11"
 
 [plugins]
