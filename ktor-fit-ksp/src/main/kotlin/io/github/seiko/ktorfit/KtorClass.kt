@@ -11,6 +11,7 @@ internal val parseQueryString = ClassName("io.ktor.http", "parseQueryString")
 internal val contentType = ClassName("io.ktor.http", "contentType")
 
 internal val body = ClassName("io.ktor.client.call", "body")
+internal val bodyAsText = ClassName("io.ktor.client.statement", "bodyAsText")
 
 internal val request = ClassName("io.ktor.client.request", "request")
 internal val prepareRequest = ClassName("io.ktor.client.request", "prepareRequest")

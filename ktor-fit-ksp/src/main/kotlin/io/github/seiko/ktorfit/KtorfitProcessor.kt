@@ -221,6 +221,8 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
 
         if (isStreaming) {
             functionBuilder.addStatement("return result")
+        } else if (function.returnType?.isString == true) {
+            functionBuilder.addStatement("return result.%T()", bodyAsText)
         } else {
             functionBuilder.addStatement("return result.%T()", body)
         }
