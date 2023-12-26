@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '**'
+  workflow_dispatch:
 
 jobs:
   publish_maven:
@@ -16,7 +17,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Publish to MavenCentral
         run: ./gradlew publishAllPublicationsToMavenCentralRepository --stacktrace --no-daemon --no-parallel
