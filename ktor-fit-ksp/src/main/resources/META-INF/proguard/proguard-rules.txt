@@ -1,0 +1,1 @@
+-keepnames @io.github.seiko.ktorfit.annotation.generator.GenerateApi class **
