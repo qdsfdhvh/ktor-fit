@@ -38,22 +38,22 @@ dependencies {
 Create a kotlin expect class
 
 ```kotlin
-// @Suppress("NO_ACTUAL_FOR_EXPECT")
+@Suppress("NO_ACTUAL_FOR_EXPECT")
 @GenerateApi
-expect class TestService(client: HttpClient, /* baseUrl: String */) /* : TestOtherApi1, TestOtherApi2 */ {
+expect class TestService(client: HttpClient) : TestOtherApi1, TestOtherApi2 {
     @GET("get/{id}")
     suspend fun getData(@Path("id") id: String, @Query("name") name: String): String
 }
 
-// interface TestOtherApi1 {
-//     @GET("get1/{id}")
-//     suspend fun getOtherData1(): String
-// }
-//
-// interface TestOtherApi2 {
-//     @GET("get2/{id}")
-//     suspend fun getOtherData2(): String
-// }
+interface TestOtherApi1 {
+    @GET("get1/{id}")
+    suspend fun getOtherData1(): String
+}
+
+interface TestOtherApi2 {
+    @GET("get2/{id}")
+    suspend fun getOtherData2(): String
+}
 ```
 
 And then create api
