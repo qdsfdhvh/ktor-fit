@@ -1,5 +1,9 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.dokka)
     id("com.vanniktech.maven.publish.base")
 }
 
@@ -30,4 +34,14 @@ kotlin {
         nodejs()
     }
     jvmToolchain(17)
+}
+
+mavenPublishing {
+    @Suppress("UnstableApiUsage")
+    configure(
+        KotlinMultiplatform(
+            javadocJar = JavadocJar.Dokka("dokkaGfm"),
+            sourcesJar = true,
+        )
+    )
 }
