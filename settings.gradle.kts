@@ -20,7 +20,9 @@ rootProject.name = "ktor-fit"
 
 include(
     ":ktor-fit-annotation",
+    ":ktor-fit-kcp",
     ":ktor-fit-ksp",
+    ":ktor-fit-plugin",
     ":sample",
     ":sample-android",
 )

@@ -8,6 +8,7 @@ spotless = "6.23.3"
 ktlint = "0.49.1"
 ktor = "2.3.7"
 compose-multiplatform = "1.5.11"
+buildconfig = "4.0.4"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -18,6 +19,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
 
 [libraries]
 ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }

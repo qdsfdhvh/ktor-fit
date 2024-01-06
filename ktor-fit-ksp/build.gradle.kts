@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("com.vanniktech.maven.publish.base")
+    id("com.vanniktech.maven.publish")
 }
 
 kotlin {

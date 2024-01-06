@@ -18,7 +18,7 @@ allprojects {
     group = "io.github.qdsfdhvh"
     version = "1.0.8"
 
-    plugins.withId("com.vanniktech.maven.publish.base") {
+    plugins.withId("com.vanniktech.maven.publish") {
         @Suppress("UnstableApiUsage")
         configure<MavenPublishBaseExtension> {
             publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
