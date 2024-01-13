@@ -42,10 +42,19 @@ interface TestApi2 {
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 @GenerateApi
-expect class TestApiNoService(client: HttpClient) : TestApi, TestApi2 {
+expect class TestClassService(client: HttpClient) : TestApi, TestApi2 {
     @GET("path11/{id}")
     suspend fun test11(
         @Path("id") id: String,
         @Query("name") name: String,
     ): String
+}
+
+@GenerateApi
+interface TestInterfaceService : TestApi, TestApi2 {
+  @GET("path11/{id}")
+  suspend fun test11(
+    @Path("id") id: String,
+    @Query("name") name: String,
+  ): String
 }
