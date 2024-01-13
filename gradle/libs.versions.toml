@@ -5,6 +5,7 @@ ksp = "1.9.21-1.0.16"
 kotlinpoet = "1.14.2"
 publish = "0.26.0"
 spotless = "6.23.3"
+dokka = "1.9.10"
 ktlint = "0.49.1"
 ktor = "2.3.7"
 compose-multiplatform = "1.5.11"
@@ -17,6 +18,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
