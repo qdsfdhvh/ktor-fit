@@ -17,7 +17,6 @@ class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcesso
     resolver
       .getSymbolsWithAnnotation(GENERATE_API_ANNOTATION_NAME)
       .filterIsInstance<KSClassDeclaration>()
-      .filter { it.isExpect }
       .forEach { it.accept(classVisitor, Unit) }
     return emptyList()
   }

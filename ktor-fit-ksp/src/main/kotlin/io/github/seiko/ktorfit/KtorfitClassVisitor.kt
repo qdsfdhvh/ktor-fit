@@ -8,6 +8,7 @@ import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
@@ -21,10 +22,10 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.toKModifier
 import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
-import io.github.seiko.ktorfit.annotation.generator.GenerateApi
 import io.github.seiko.ktorfit.annotation.http.Body
 import io.github.seiko.ktorfit.annotation.http.DELETE
 import io.github.seiko.ktorfit.annotation.http.Field
@@ -55,7 +56,11 @@ class KtorfitClassVisitor(
 ) : KSVisitorVoid() {
   override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
     val packageName = classDeclaration.packageName.asString()
-    val className = classDeclaration.qualifiedName?.getShortName() ?: "<ERROR>"
+    var className = classDeclaration.qualifiedName?.getShortName() ?: "<ERROR>"
+
+    if (classDeclaration.isInterface) {
+      className += "Impl"
+    }
 
     val fileBuilder = FileSpec.builder(packageName, className)
     generateClass(fileBuilder, classDeclaration, className)
@@ -75,32 +80,32 @@ fun generateClass(
   classDeclaration: KSClassDeclaration,
   className: String,
 ) {
-  val clientName = classDeclaration.primaryConstructor?.parameters
-    ?.first { it.type.toTypeName() == HttpClient }?.name?.getShortName()
-  requireNotNull(clientName) {
-    "Class constructor must include HttpClient"
+  val classBuilder = TypeSpec.classBuilder(className)
+
+  if (classDeclaration.isExpect) {
+    classBuilder.addModifiers(KModifier.ACTUAL)
   }
 
-  val classBuilder = TypeSpec.classBuilder(className)
-  generateClassConstructor(classBuilder, classDeclaration)
-
-  val superType = classDeclaration.superTypes
-    .filterNot { it.toTypeName() == ANY }
-
+  val clientName = generateClassConstructorAndReturnClientName(classBuilder, classDeclaration)
 
   classDeclaration.getDeclaredFunctions().forEach { function ->
     generateFunction(
       classBuilder = classBuilder,
       function = function,
       clientName = clientName,
-      isOverride = false,
+      isOverride = classDeclaration.isInterface,
     )
   }
-  superType
+
+  classDeclaration.superTypes
+    .filterNot { it.toTypeName() == ANY }
     .mapNotNull {
       it.resolve().declaration as? KSClassDeclaration
     }
     .forEach {
+      if (classDeclaration.isClass) {
+        classBuilder.addSuperinterface(it.toClassName())
+      }
       it.getDeclaredFunctions().forEach { function ->
         generateFunction(
           classBuilder = classBuilder,
@@ -111,6 +116,10 @@ fun generateClass(
       }
     }
 
+  if (classDeclaration.isInterface) {
+    classBuilder.addSuperinterface(classDeclaration.toClassName())
+  }
+
   if (classDeclaration.modifiers.isNotEmpty()) {
     classBuilder.addModifiers(
       classDeclaration.modifiers
@@ -119,43 +128,57 @@ fun generateClass(
     )
   }
 
-  fileBuilder.addType(
-    classBuilder
-      .addSuperinterfaces(
-        superType.map { it.toTypeName() }.toList(),
-      )
-      .addModifiers(KModifier.ACTUAL)
-      .addAnnotation(GenerateApi::class)
-      .build(),
-  )
+  fileBuilder.addType(classBuilder.build())
 }
 
-private fun generateClassConstructor(
+private fun generateClassConstructorAndReturnClientName(
   classBuilder: TypeSpec.Builder,
   classDeclaration: KSClassDeclaration,
-) {
+): String {
   val constructorBuilder = FunSpec.constructorBuilder()
 
-  classDeclaration.primaryConstructor!!.parameters.forEach { parameter ->
-    val name = parameter.name?.getShortName().orEmpty()
-    val type = parameter.type.toTypeName()
-    constructorBuilder.addParameter(
-      ParameterSpec.builder(name, type).build(),
-    )
-    // private val in constructor
+  val clientName = if (classDeclaration.isClass) {
+    requireNotNull(
+      classDeclaration.primaryConstructor?.parameters
+        ?.first { it.type.toTypeName() == HttpClient }?.name?.getShortName()
+    ) {
+      "Class constructor must include HttpClient"
+    }
+  } else "client"
+
+  if (classDeclaration.isClass) {
+    classDeclaration.primaryConstructor?.parameters?.forEach { parameter ->
+      val name = parameter.name?.getShortName().orEmpty()
+      val type = parameter.type.toTypeName()
+      constructorBuilder.addParameter(
+        ParameterSpec.builder(name, type).build(),
+      )
+      // private val in constructor
+      classBuilder.addProperty(
+        PropertySpec.builder(name, type)
+          .initializer(name)
+          .addModifiers(KModifier.PRIVATE)
+          .build(),
+      )
+    }
+  } else {
+    constructorBuilder.addParameter(clientName, HttpClient)
     classBuilder.addProperty(
-      PropertySpec.builder(name, type)
-        .initializer(name)
+      PropertySpec.builder(clientName, HttpClient)
+        .initializer(clientName)
         .addModifiers(KModifier.PRIVATE)
-        .build(),
+        .build()
     )
   }
 
+  if (classDeclaration.isExpect) {
+    constructorBuilder.addModifiers(KModifier.ACTUAL)
+  }
+
   classBuilder.primaryConstructor(
-    constructorBuilder
-      .addModifiers(KModifier.ACTUAL)
-      .build(),
+    constructorBuilder.build(),
   )
+  return clientName
 }
 
 private fun generateFunction(
@@ -428,6 +451,12 @@ private fun FunSpec.Builder.withControlFlow(
   block()
   endControlFlow()
 }
+
+private val KSClassDeclaration.isClass: Boolean
+  get() = classKind == ClassKind.CLASS
+
+private val KSClassDeclaration.isInterface: Boolean
+  get() = classKind == ClassKind.INTERFACE
 
 private val KSTypeReference.isString get() = toTypeName() == StringType
 private val KSTypeReference.isStringNullable get() = toTypeName() == StringNullableType

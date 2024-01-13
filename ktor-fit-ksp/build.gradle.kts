@@ -12,4 +12,7 @@ dependencies {
   compileOnly(libs.ksp.api)
   implementation(projects.ktorFitAnnotation)
   implementation(libs.kotlinpoet.ksp)
+  testImplementation(kotlin("test"))
+  testImplementation(libs.kotlin.compile.testing.ksp)
+  testImplementation(libs.ktor.client.core)
 }
