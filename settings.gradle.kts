@@ -5,6 +5,7 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
     }
+    includeBuild("ktor-fit-gradle-plugin")
 }
 
 @Suppress("UnstableApiUsage")
