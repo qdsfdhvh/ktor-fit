@@ -56,396 +56,397 @@ import io.github.seiko.ktorfit.annotation.http.Url
 @OptIn(KspExperimental::class)
 class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
-    private val codeGenerator: CodeGenerator = environment.codeGenerator
+  private val codeGenerator: CodeGenerator = environment.codeGenerator
 
-    companion object {
-        private val GENERATE_API_ANNOTATION_NAME =
-            requireNotNull(GenerateApi::class.qualifiedName) { "Can not get qualifiedName for GenerateApi" }
+  companion object {
+    private val GENERATE_API_ANNOTATION_NAME = requireNotNull(GenerateApi::class.qualifiedName) {
+      "Can not get qualifiedName for GenerateApi"
+    }
+  }
+
+  override fun process(resolver: Resolver): List<KSAnnotated> {
+    resolver
+      .getSymbolsWithAnnotation(GENERATE_API_ANNOTATION_NAME)
+      .filterIsInstance<KSClassDeclaration>()
+      .filter { it.isExpect }
+      .forEach { generateFile(it) }
+    return emptyList()
+  }
+
+  private fun generateFile(classDeclaration: KSClassDeclaration) {
+    val packageName = classDeclaration.packageName.asString()
+    val className = classDeclaration.qualifiedName?.getShortName() ?: "<ERROR>"
+
+    val fileBuilder = FileSpec.builder(packageName, className)
+    generateClass(fileBuilder, classDeclaration, className)
+
+    fileBuilder
+      .addImport("io.ktor.http", "encodeURLPath")
+      .build()
+      .writeTo(
+        codeGenerator = codeGenerator,
+        dependencies = Dependencies(true, classDeclaration.containingFile!!),
+      )
+  }
+
+  private fun generateClass(
+    fileBuilder: FileSpec.Builder,
+    classDeclaration: KSClassDeclaration,
+    className: String,
+  ) {
+    val clientName = classDeclaration.primaryConstructor?.parameters
+      ?.first { it.type.toTypeName() == HttpClient }?.name?.getShortName()
+    requireNotNull(clientName) {
+      "Class constructor must include HttpClient"
     }
 
-    override fun process(resolver: Resolver): List<KSAnnotated> {
-        resolver
-            .getSymbolsWithAnnotation(GENERATE_API_ANNOTATION_NAME)
-            .filterIsInstance<KSClassDeclaration>()
-            .filter { it.isExpect }
-            .forEach { generateFile(it) }
-        return emptyList()
+    val classBuilder = TypeSpec.classBuilder(className)
+    generateClassConstructor(classBuilder, classDeclaration)
+
+    val superType = classDeclaration.superTypes
+      .filterNot { it.toTypeName() == ANY }
+
+
+    classDeclaration.getDeclaredFunctions().forEach { function ->
+      generateFunction(
+        classBuilder = classBuilder,
+        function = function,
+        clientName = clientName,
+        isOverride = false,
+      )
+    }
+    superType
+      .mapNotNull {
+        it.resolve().declaration as? KSClassDeclaration
+      }
+      .forEach {
+        it.getDeclaredFunctions().forEach { function ->
+          generateFunction(
+            classBuilder = classBuilder,
+            function = function,
+            clientName = clientName,
+            isOverride = true,
+          )
+        }
+      }
+
+    if (classDeclaration.modifiers.isNotEmpty()) {
+      classBuilder.addModifiers(
+        classDeclaration.modifiers
+          .filter { it.name != KModifier.EXPECT.name }
+          .mapNotNull { it.toKModifier() },
+      )
     }
 
-    private fun generateFile(classDeclaration: KSClassDeclaration) {
-        val packageName = classDeclaration.packageName.asString()
-        val className = classDeclaration.qualifiedName?.getShortName() ?: "<ERROR>"
-
-        val fileBuilder = FileSpec.builder(packageName, className)
-        generateClass(fileBuilder, classDeclaration, className)
-
-        fileBuilder
-            .addImport("io.ktor.http", "encodeURLPath")
-            .build()
-            .writeTo(
-                codeGenerator = codeGenerator,
-                dependencies = Dependencies(true, classDeclaration.containingFile!!)
-            )
-    }
-
-    private fun generateClass(
-        fileBuilder: FileSpec.Builder,
-        classDeclaration: KSClassDeclaration,
-        className: String,
-    ) {
-        val clientName = classDeclaration.primaryConstructor?.parameters
-            ?.first { it.type.toTypeName() == HttpClient }?.name?.getShortName()
-        requireNotNull(clientName) {
-            "Class constructor must include HttpClient"
-        }
-
-        val classBuilder = TypeSpec.classBuilder(className)
-        generateClassConstructor(classBuilder, classDeclaration)
-
-        val superType = classDeclaration.superTypes
-            .filterNot { it.toTypeName() == ANY }
-
-
-        classDeclaration.getDeclaredFunctions().forEach { function ->
-            generateFunction(
-                classBuilder = classBuilder,
-                function = function,
-                clientName = clientName,
-                isOverride = false,
-            )
-        }
-        superType
-            .mapNotNull {
-                it.resolve().declaration as? KSClassDeclaration
-            }
-            .forEach {
-                it.getDeclaredFunctions().forEach { function ->
-                    generateFunction(
-                        classBuilder = classBuilder,
-                        function = function,
-                        clientName = clientName,
-                        isOverride = true,
-                    )
-                }
-            }
-
-        if (classDeclaration.modifiers.isNotEmpty()) {
-            classBuilder.addModifiers(
-                classDeclaration.modifiers
-                    .filter { it.name != KModifier.EXPECT.name }
-                    .mapNotNull { it.toKModifier() }
-            )
-        }
-
-        fileBuilder.addType(
-            classBuilder
-                .addSuperinterfaces(
-                    superType.map { it.toTypeName() }.toList()
-                )
-                .addModifiers(KModifier.ACTUAL)
-                .addAnnotation(GenerateApi::class)
-                .build()
+    fileBuilder.addType(
+      classBuilder
+        .addSuperinterfaces(
+          superType.map { it.toTypeName() }.toList(),
         )
+        .addModifiers(KModifier.ACTUAL)
+        .addAnnotation(GenerateApi::class)
+        .build(),
+    )
+  }
+
+  private fun generateClassConstructor(
+    classBuilder: TypeSpec.Builder,
+    classDeclaration: KSClassDeclaration,
+  ) {
+    val constructorBuilder = FunSpec.constructorBuilder()
+
+    classDeclaration.primaryConstructor!!.parameters.forEach { parameter ->
+      val name = parameter.name?.getShortName().orEmpty()
+      val type = parameter.type.toTypeName()
+      constructorBuilder.addParameter(
+        ParameterSpec.builder(name, type).build(),
+      )
+      // private val in constructor
+      classBuilder.addProperty(
+        PropertySpec.builder(name, type)
+          .initializer(name)
+          .addModifiers(KModifier.PRIVATE)
+          .build(),
+      )
     }
 
-    private fun generateClassConstructor(
-        classBuilder: TypeSpec.Builder,
-        classDeclaration: KSClassDeclaration,
-    ) {
-        val constructorBuilder = FunSpec.constructorBuilder()
+    classBuilder.primaryConstructor(
+      constructorBuilder
+        .addModifiers(KModifier.ACTUAL)
+        .build(),
+    )
+  }
 
-        classDeclaration.primaryConstructor!!.parameters.forEach { parameter ->
-            val name = parameter.name?.getShortName().orEmpty()
-            val type = parameter.type.toTypeName()
-            constructorBuilder.addParameter(
-                ParameterSpec.builder(name, type).build()
-            )
-            // private val in constructor
-            classBuilder.addProperty(
-                PropertySpec.builder(name, type)
-                    .initializer(name)
-                    .addModifiers(KModifier.PRIVATE)
-                    .build()
-            )
-        }
+  private fun generateFunction(
+    classBuilder: TypeSpec.Builder,
+    function: KSFunctionDeclaration,
+    clientName: String,
+    isOverride: Boolean,
+  ) {
+    val functionName = function.qualifiedName?.getShortName() ?: return
+    val (method, url) = getHttpMethodAndUrl(function) ?: return
 
-        classBuilder.primaryConstructor(
-            constructorBuilder
-                .addModifiers(KModifier.ACTUAL)
-                .build()
+    val functionBuilder = FunSpec.builder(functionName)
+
+    functionBuilder.addModifiers(if (isOverride) KModifier.OVERRIDE else KModifier.ACTUAL)
+    if (function.modifiers.isNotEmpty()) {
+      functionBuilder.addModifiers(
+        function.modifiers.mapNotNull {
+          it.toKModifier()
+        },
+      )
+    }
+    if (function.parameters.isNotEmpty()) {
+      functionBuilder.addParameters(
+        function.parameters.map {
+          ParameterSpec.builder(
+            it.name?.getShortName().orEmpty(),
+            it.type.toTypeName(),
+          ).build()
+        },
+      )
+    }
+    function.returnType?.let {
+      functionBuilder.returns(it.toTypeName())
+    }
+
+    val isStreaming = function.getAnnotationsByType(Streaming::class).firstOrNull() != null
+    val request = if (isStreaming) prepareRequest else request
+
+    functionBuilder.withControlFlow("val result = %L.%T", clientName, request) {
+      functionBuilder.addStatement("method = %T.parse(%S)", HttpMethod, method)
+      generateUrlAndParams(functionBuilder, function, url)
+      generateHeaders(functionBuilder, function)
+      generateBody(functionBuilder, function)
+    }
+
+    if (isStreaming) {
+      functionBuilder.addStatement("return result")
+    } else if (function.returnType?.isString == true) {
+      functionBuilder.addStatement("return result.%T()", bodyAsText)
+    } else {
+      functionBuilder.addStatement("return result.%T()", body)
+    }
+
+    classBuilder.addFunction(
+      functionBuilder
+        .build(),
+    )
+  }
+
+  private fun generateUrlAndParams(
+    functionBuilder: FunSpec.Builder,
+    function: KSFunctionDeclaration,
+    url: String,
+  ) {
+    // Path
+    var finalUrl = url
+    function.parameters.forEach { parameter ->
+      parameter.getAnnotationsByType(Path::class).firstOrNull()?.let {
+        finalUrl = finalUrl.replace(
+          "{${it.value.ifEmpty { parameter.shoreName }}}",
+          "\${${encode(parameter.shoreName, parameter.type.isString && it.encoded)}}",
         )
+      }
     }
 
-    private fun generateFunction(
-        classBuilder: TypeSpec.Builder,
-        function: KSFunctionDeclaration,
-        clientName: String,
-        isOverride: Boolean,
-    ) {
-        val functionName = function.qualifiedName?.getShortName() ?: return
-        val (method, url) = getHttpMethodAndUrl(function) ?: return
+    // Url
+    val urlParameter =
+      function.parameters.firstOrNull { it.isAnnotationPresent(Url::class) }
+    if (urlParameter != null) {
+      functionBuilder.addStatement("%T(%S)", urlClass, urlParameter.shoreName)
+    } else {
+      functionBuilder.addStatement("%T(\"%L\")", urlClass, finalUrl)
+    }
 
-        val functionBuilder = FunSpec.builder(functionName)
-
-        functionBuilder.addModifiers(if (isOverride) KModifier.OVERRIDE else KModifier.ACTUAL)
-        if (function.modifiers.isNotEmpty()) {
-            functionBuilder.addModifiers(
-                function.modifiers.mapNotNull {
-                    it.toKModifier()
-                }
-            )
-        }
-        if (function.parameters.isNotEmpty()) {
-            functionBuilder.addParameters(
-                function.parameters.map {
-                    ParameterSpec.builder(
-                        it.name?.getShortName().orEmpty(),
-                        it.type.toTypeName()
-                    ).build()
-                }
-            )
-        }
-        function.returnType?.let {
-            functionBuilder.returns(it.toTypeName())
-        }
-
-        val isStreaming = function.getAnnotationsByType(Streaming::class).firstOrNull() != null
-        val request = if (isStreaming) prepareRequest else request
-
-        functionBuilder.withControlFlow("val result = %L.%T", clientName, request) {
-            functionBuilder.addStatement("method = %T.parse(%S)", HttpMethod, method)
-            generateUrlAndParams(functionBuilder, function, url)
-            generateHeaders(functionBuilder, function)
-            generateBody(functionBuilder, function)
-        }
-
-        if (isStreaming) {
-            functionBuilder.addStatement("return result")
-        } else if (function.returnType?.isString == true) {
-            functionBuilder.addStatement("return result.%T()", bodyAsText)
-        } else {
-            functionBuilder.addStatement("return result.%T()", body)
-        }
-
-        classBuilder.addFunction(
-            functionBuilder
-                .build()
+    // Query
+    function.parameters.forEach { parameter ->
+      parameter.getAnnotationsByType(Query::class).firstOrNull()?.let {
+        functionBuilder.addStatement(
+          "%T(%S, %L)",
+          parameterClass,
+          it.value.ifEmpty { parameter.shoreName },
+          encode(parameter.shoreName, parameter.type.isString && it.encoded),
         )
+        return@forEach
+      }
+      parameter.getAnnotationsByType(QueryMap::class).firstOrNull()?.let {
+        functionBuilder.addStatement(
+          "%L.forEach { %T(it.key, %L) }",
+          parameter.shoreName,
+          parameterClass,
+          encode("it.value", it.encoded),
+        )
+        return@forEach
+      }
+      parameter.getAnnotationsByType(QueryName::class).firstOrNull()?.let {
+        // only support a=b&b=c, different with retrofit
+        functionBuilder.addStatement(
+          "url.parameters.appendAll(%T(%L))",
+          parseQueryString,
+          encode(parameter.shoreName, parameter.type.isString && it.encoded),
+        )
+      }
     }
+  }
 
-    private fun generateUrlAndParams(
-        functionBuilder: FunSpec.Builder,
-        function: KSFunctionDeclaration,
-        url: String,
-    ) {
-        // Path
-        var finalUrl = url
-        function.parameters.forEach { parameter ->
-            parameter.getAnnotationsByType(Path::class).firstOrNull()?.let {
-                finalUrl = finalUrl.replace(
-                    "{${it.value.ifEmpty { parameter.shoreName }}}",
-                    "\${${encode(parameter.shoreName, parameter.type.isString && it.encoded)}}"
-                )
-            }
-        }
-
-        // Url
-        val urlParameter =
-            function.parameters.firstOrNull { it.isAnnotationPresent(Url::class) }
-        if (urlParameter != null) {
-            functionBuilder.addStatement("%T(%S)", urlClass, urlParameter.shoreName)
-        } else {
-            functionBuilder.addStatement("%T(\"%L\")", urlClass, finalUrl)
-        }
-
-        // Query
-        function.parameters.forEach { parameter ->
-            parameter.getAnnotationsByType(Query::class).firstOrNull()?.let {
-                functionBuilder.addStatement(
-                    "%T(%S, %L)",
-                    parameterClass,
-                    it.value.ifEmpty { parameter.shoreName },
-                    encode(parameter.shoreName, parameter.type.isString && it.encoded)
-                )
-                return@forEach
-            }
-            parameter.getAnnotationsByType(QueryMap::class).firstOrNull()?.let {
-                functionBuilder.addStatement(
-                    "%L.forEach { %T(it.key, %L) }",
-                    parameter.shoreName,
-                    parameterClass,
-                    encode("it.value", it.encoded)
-                )
-                return@forEach
-            }
-            parameter.getAnnotationsByType(QueryName::class).firstOrNull()?.let {
-                // only support a=b&b=c, different with retrofit
-                functionBuilder.addStatement(
-                    "url.parameters.appendAll(%T(%L))",
-                    parseQueryString,
-                    encode(parameter.shoreName, parameter.type.isString && it.encoded)
-                )
-            }
-        }
+  private fun generateHeaders(
+    functionBuilder: FunSpec.Builder,
+    function: KSFunctionDeclaration,
+  ) {
+    function.getAnnotationsByType(Headers::class).forEach {
+      it.value.forEach { header ->
+        val (k, v) = header.split(":")
+        functionBuilder.addStatement("%T(%S,%L)", headerClass, k, v)
+      }
     }
-
-    private fun generateHeaders(
-        functionBuilder: FunSpec.Builder,
-        function: KSFunctionDeclaration,
-    ) {
-        function.getAnnotationsByType(Headers::class).forEach {
-            it.value.forEach { header ->
-                val (k, v) = header.split(":")
-                functionBuilder.addStatement("%T(%S,%L)", headerClass, k, v)
-            }
-        }
-        function.parameters.forEach { parameter ->
-            parameter.getAnnotationsByType(Header::class).firstOrNull()?.let {
-                functionBuilder.addStatement(
-                    "%T(%S, %L)",
-                    headerClass,
-                    it.value,
-                    parameter.shoreName
-                )
-                return@forEach
-            }
-            parameter.getAnnotationsByType(HeaderMap::class).firstOrNull()?.let {
-                functionBuilder.addStatement(
-                    "%L.forEach { %T(it.key, it.value) }",
-                    parameter.shoreName,
-                    headerClass,
-                )
-            }
-        }
+    function.parameters.forEach { parameter ->
+      parameter.getAnnotationsByType(Header::class).firstOrNull()?.let {
+        functionBuilder.addStatement(
+          "%T(%S, %L)",
+          headerClass,
+          it.value,
+          parameter.shoreName,
+        )
+        return@forEach
+      }
+      parameter.getAnnotationsByType(HeaderMap::class).firstOrNull()?.let {
+        functionBuilder.addStatement(
+          "%L.forEach { %T(it.key, it.value) }",
+          parameter.shoreName,
+          headerClass,
+        )
+      }
     }
+  }
 
-    private fun generateBody(
-        functionBuilder: FunSpec.Builder,
-        function: KSFunctionDeclaration,
-    ) {
-        function.parameters.forEach { parameter ->
-            parameter.getAnnotationsByType(Body::class).firstOrNull()?.let {
-                functionBuilder.addStatement("%T(%L)", setBody, parameter.shoreName)
-                return
-            }
-        }
-        function.getAnnotationsByType(FormUrlEncoded::class).firstOrNull()?.let {
-            functionBuilder.withControlFlow("val parameters = %T.build", Parameters) {
-                function.parameters.forEach { parameter ->
-                    parameter.getAnnotationsByType(Field::class).firstOrNull()?.let {
-                        when {
-                            parameter.type.isString -> {
-                                functionBuilder.addStatement(
-                                    "append(%S, %L)",
-                                    it.value,
-                                    encode(parameter.shoreName, it.encoded)
-                                )
-                            }
-
-                            parameter.type.isStringNullable -> {
-                                functionBuilder.addStatement(
-                                    "if (%L != null) append(%S, %L)",
-                                    parameter.shoreName,
-                                    it.value,
-                                    encode(parameter.shoreName, it.encoded)
-                                )
-                            }
-
-                            parameter.type.isArray || parameter.type.isList -> {
-                                functionBuilder.addStatement(
-                                    "append(%S, %S.joinToString { %L })",
-                                    it.value,
-                                    parameter.shoreName,
-                                    encode("it", it.encoded)
-                                )
-                            }
-
-                            parameter.type.isArrayNullable || parameter.type.isListNullable -> {
-                                functionBuilder.addStatement(
-                                    "append(%S, %S.joinToString { if (it != null) %L ?: \"\" })",
-                                    it.value,
-                                    parameter.shoreName,
-                                    encode("it", it.encoded)
-                                )
-                            }
-
-                            else -> Unit
-                        }
-                    }
-
-                    parameter.getAnnotationsByType(FieldMap::class).firstOrNull()?.let {
-                        parameter.type
-                        functionBuilder.addStatement(
-                            "%L.forEach { append(it.key, %L) }",
-                            parameter.shoreName,
-                            encode("it.value", it.encoded)
-                        )
-                    }
-                }
-            }
-            functionBuilder.addStatement("%T(%T(parameters))", setBody, FormDataContent)
-            return
-        }
-        function.getAnnotationsByType(Multipart::class).firstOrNull()?.let {
-            functionBuilder.withControlFlow("val formData = %T", formData) {
-                function.parameters.forEach { parameter ->
-                    parameter.getAnnotationsByType(Part::class).firstOrNull()?.let {
-                        functionBuilder.addStatement(
-                            "append(%S, %S)",
-                            it.value,
-                            parameter.shoreName
-                        )
-                    }
-                }
-            }
-            functionBuilder.addStatement("%T(%T(formData))", setBody, MultiPartFormDataContent)
-            return
-        }
-        function.parameters.forEach { parameter ->
-            parameter.getAnnotationsByType(ReqBuilder::class).firstOrNull()?.let {
-                functionBuilder.addStatement("%T(%L)", takeFrom, parameter.shoreName)
-            }
-        }
+  private fun generateBody(
+    functionBuilder: FunSpec.Builder,
+    function: KSFunctionDeclaration,
+  ) {
+    function.parameters.forEach { parameter ->
+      parameter.getAnnotationsByType(Body::class).firstOrNull()?.let {
+        functionBuilder.addStatement("%T(%L)", setBody, parameter.shoreName)
+        return
+      }
     }
+    function.getAnnotationsByType(FormUrlEncoded::class).firstOrNull()?.let {
+      functionBuilder.withControlFlow("val parameters = %T.build", Parameters) {
+        function.parameters.forEach { parameter ->
+          parameter.getAnnotationsByType(Field::class).firstOrNull()?.let {
+            when {
+              parameter.type.isString -> {
+                functionBuilder.addStatement(
+                  "append(%S, %L)",
+                  it.value,
+                  encode(parameter.shoreName, it.encoded),
+                )
+              }
+
+              parameter.type.isStringNullable -> {
+                functionBuilder.addStatement(
+                  "if (%L != null) append(%S, %L)",
+                  parameter.shoreName,
+                  it.value,
+                  encode(parameter.shoreName, it.encoded),
+                )
+              }
+
+              parameter.type.isArray || parameter.type.isList -> {
+                functionBuilder.addStatement(
+                  "append(%S, %S.joinToString { %L })",
+                  it.value,
+                  parameter.shoreName,
+                  encode("it", it.encoded),
+                )
+              }
+
+              parameter.type.isArrayNullable || parameter.type.isListNullable -> {
+                functionBuilder.addStatement(
+                  "append(%S, %S.joinToString { if (it != null) %L ?: \"\" })",
+                  it.value,
+                  parameter.shoreName,
+                  encode("it", it.encoded),
+                )
+              }
+
+              else -> Unit
+            }
+          }
+
+          parameter.getAnnotationsByType(FieldMap::class).firstOrNull()?.let {
+            parameter.type
+            functionBuilder.addStatement(
+              "%L.forEach { append(it.key, %L) }",
+              parameter.shoreName,
+              encode("it.value", it.encoded),
+            )
+          }
+        }
+      }
+      functionBuilder.addStatement("%T(%T(parameters))", setBody, FormDataContent)
+      return
+    }
+    function.getAnnotationsByType(Multipart::class).firstOrNull()?.let {
+      functionBuilder.withControlFlow("val formData = %T", formData) {
+        function.parameters.forEach { parameter ->
+          parameter.getAnnotationsByType(Part::class).firstOrNull()?.let {
+            functionBuilder.addStatement(
+              "append(%S, %S)",
+              it.value,
+              parameter.shoreName,
+            )
+          }
+        }
+      }
+      functionBuilder.addStatement("%T(%T(formData))", setBody, MultiPartFormDataContent)
+      return
+    }
+    function.parameters.forEach { parameter ->
+      parameter.getAnnotationsByType(ReqBuilder::class).firstOrNull()?.let {
+        functionBuilder.addStatement("%T(%L)", takeFrom, parameter.shoreName)
+      }
+    }
+  }
 }
 
 @OptIn(KspExperimental::class)
 private fun getHttpMethodAndUrl(function: KSFunctionDeclaration): Pair<String, String>? {
-    function.getAnnotationsByType(GET::class).firstOrNull()?.let {
-        return "GET" to it.value
-    }
-    function.getAnnotationsByType(POST::class).firstOrNull()?.let {
-        return "POST" to it.value
-    }
-    function.getAnnotationsByType(PUT::class).firstOrNull()?.let {
-        return "PUT" to it.value
-    }
-    function.getAnnotationsByType(PATCH::class).firstOrNull()?.let {
-        return "PATCH" to it.value
-    }
-    function.getAnnotationsByType(DELETE::class).firstOrNull()?.let {
-        return "DELETE" to it.value
-    }
-    function.getAnnotationsByType(HEAD::class).firstOrNull()?.let {
-        return "HEAD" to it.value
-    }
-    function.getAnnotationsByType(OPTIONS::class).firstOrNull()?.let {
-        return "OPTIONS" to it.value
-    }
-    function.getAnnotationsByType(HTTP::class).firstOrNull()?.let {
-        return it.method to it.path
-    }
-    return null
+  function.getAnnotationsByType(GET::class).firstOrNull()?.let {
+    return "GET" to it.value
+  }
+  function.getAnnotationsByType(POST::class).firstOrNull()?.let {
+    return "POST" to it.value
+  }
+  function.getAnnotationsByType(PUT::class).firstOrNull()?.let {
+    return "PUT" to it.value
+  }
+  function.getAnnotationsByType(PATCH::class).firstOrNull()?.let {
+    return "PATCH" to it.value
+  }
+  function.getAnnotationsByType(DELETE::class).firstOrNull()?.let {
+    return "DELETE" to it.value
+  }
+  function.getAnnotationsByType(HEAD::class).firstOrNull()?.let {
+    return "HEAD" to it.value
+  }
+  function.getAnnotationsByType(OPTIONS::class).firstOrNull()?.let {
+    return "OPTIONS" to it.value
+  }
+  function.getAnnotationsByType(HTTP::class).firstOrNull()?.let {
+    return it.method to it.path
+  }
+  return null
 }
 
 private fun FunSpec.Builder.withControlFlow(
-    controlFlow: String,
-    vararg args: Any,
-    block: () -> Unit,
+  controlFlow: String,
+  vararg args: Any,
+  block: () -> Unit,
 ) {
-    beginControlFlow(controlFlow, *args)
-    block()
-    endControlFlow()
+  beginControlFlow(controlFlow, *args)
+  block()
+  endControlFlow()
 }
 
 private val KSTypeReference.isString get() = toTypeName() == StringType
@@ -463,7 +464,7 @@ private val ArrayType = Array::class.asTypeName()
 private val ArrayNullableType = ArrayType.copy(nullable = true)
 
 private val KSValueParameter.shoreName: String
-    get() = name?.getShortName().orEmpty()
+  get() = name?.getShortName().orEmpty()
 
 private fun encode(value: String, enabled: Boolean = true) =
-    if (enabled) "$value.encodeURLPath()" else value
+  if (enabled) "$value.encodeURLPath()" else value
