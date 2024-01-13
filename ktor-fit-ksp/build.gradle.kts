@@ -9,7 +9,7 @@ kotlin {
 }
 
 dependencies {
+  compileOnly(libs.ksp.api)
   implementation(projects.ktorFitAnnotation)
-  implementation(libs.ksp.api)
   implementation(libs.kotlinpoet.ksp)
 }
