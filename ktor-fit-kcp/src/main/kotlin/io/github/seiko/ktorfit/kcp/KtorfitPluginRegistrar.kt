@@ -1,9 +1,7 @@
 package io.github.seiko.ktorfit.kcp
 
-import io.github.seiko.ktorfit.kcp.ir.KtorfitIrGenerationExtension
+import com.google.auto.service.AutoService
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
-import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -15,15 +13,12 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
  * 2023/12/30 23:36
  */
 @OptIn(ExperimentalCompilerApi::class)
-class KtorfitRegistrar : CompilerPluginRegistrar()  {
+@AutoService(KtorfitPluginRegistrar::class)
+class KtorfitPluginRegistrar : CompilerPluginRegistrar() {
   override val supportsK2: Boolean
     get() = true
 
   override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
-    IrGenerationExtension.registerExtension(
-      KtorfitIrGenerationExtension(
-        configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
-      )
-    )
+    IrGenerationExtension.registerExtension(KtorfitIrGenerationExtension(configuration))
   }
 }

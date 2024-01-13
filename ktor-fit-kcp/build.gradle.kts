@@ -1,14 +1,21 @@
 plugins {
-  kotlin("jvm")
-  id("com.vanniktech.maven.publish")
+  alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.ksp)
+  alias(libs.plugins.maven.publish)
+  alias(libs.plugins.dokka)
+}
+
+kotlin {
+  jvmToolchain(17)
 }
 
 dependencies {
-  compileOnly("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+  compileOnly(libs.kotlin.compiler.embeddable)
+
+  compileOnly(libs.auto.service.annotations)
+  ksp(libs.auto.service.ksp)
 
   testImplementation(kotlin("test"))
-  // https://github.com/tschuchortdev/kotlin-compile-testing   no support for Kotlin 1.9
-  // https://github.com/ZacSweers/kotlin-compile-testing
-  testImplementation("dev.zacsweers.kctfork:core:0.4.0")
+  testImplementation(libs.kotlin.compile.testing)
   testImplementation(projects.ktorFitAnnotation)
 }

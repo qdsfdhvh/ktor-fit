@@ -1,28 +1,15 @@
-import com.vanniktech.maven.publish.JavadocJar
-import com.vanniktech.maven.publish.KotlinJvm
-
 plugins {
-    kotlin("jvm")
-    alias(libs.plugins.dokka)
-    id("com.vanniktech.maven.publish.base")
+  alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.maven.publish)
+  alias(libs.plugins.dokka)
 }
 
 kotlin {
-    jvmToolchain(17)
+  jvmToolchain(17)
 }
 
 dependencies {
-    implementation(projects.ktorFitAnnotation)
-    implementation(libs.ksp.api)
-    implementation(libs.kotlinpoet.ksp)
-}
-
-mavenPublishing {
-    @Suppress("UnstableApiUsage")
-    configure(
-        KotlinJvm(
-            javadocJar = JavadocJar.Dokka("dokkaGfm"),
-            sourcesJar = true,
-        )
-    )
+  implementation(projects.ktorFitAnnotation)
+  implementation(libs.ksp.api)
+  implementation(libs.kotlinpoet.ksp)
 }

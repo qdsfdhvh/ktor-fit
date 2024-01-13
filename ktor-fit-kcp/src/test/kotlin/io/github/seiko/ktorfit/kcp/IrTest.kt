@@ -64,8 +64,7 @@ class IrTest {
       sources = listOf(apiSource, implSource, clientSource)
 
       // pass your own instance of a compiler plugin
-      commandLineProcessors = listOf(KtorfitProcessor())
-      compilerPluginRegistrars = listOf(KtorfitRegistrar())
+      compilerPluginRegistrars = listOf(KtorfitPluginRegistrar())
 
       inheritClassPath = true
       messageOutputStream = System.out // see diagnostics in real time
