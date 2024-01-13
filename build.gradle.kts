@@ -16,8 +16,8 @@ allprojects {
         mavenCentral()
     }
 
-    group = "io.github.qdsfdhvh"
-    version = "1.0.8"
+    group = rootProject.properties["GROUP"] as String
+    version = rootProject.properties["VERSION_NAME"] as String
 
     plugins.withId("com.vanniktech.maven.publish") {
         @Suppress("UnstableApiUsage")
