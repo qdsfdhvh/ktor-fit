@@ -11,6 +11,19 @@ plugins {
   alias(libs.plugins.dokka)
 }
 
+spotless {
+  kotlin {
+    target("**/*.kt")
+    targetExclude("**/build/")
+    ktlint(libs.versions.ktlint.get())
+  }
+  kotlinGradle {
+    target("**/*.gradle.kts")
+    targetExclude("**/build/")
+    ktlint(libs.versions.ktlint.get())
+  }
+}
+
 allprojects {
   group = rootProject.properties["GROUP"] as String
   version = rootProject.properties["VERSION_NAME"] as String

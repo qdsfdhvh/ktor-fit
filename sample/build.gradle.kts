@@ -1,13 +1,13 @@
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.ksp)
+  alias(libs.plugins.kotlin.multiplatform)
+  alias(libs.plugins.ksp)
 }
 
 kotlin {
-    jvm()
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+  jvm()
+  iosX64()
+  iosArm64()
+  iosSimulatorArm64()
 //    macosX64()
 //    macosArm64()
 //    linuxX64()
@@ -24,31 +24,31 @@ kotlin {
 //        browser()
 //        nodejs()
 //    }
-    // @Suppress("OPT_IN_USAGE")
-    // wasm {
-    //     browser()
-    //     nodejs()
-    // }
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(projects.ktorFitAnnotation)
-                implementation(libs.bundles.ktor)
-            }
-        }
-        val jvmMain by getting {
-            kotlin.srcDir("build/generated/ksp/jvm/jvmMain/kotlin")
-        }
+  // @Suppress("OPT_IN_USAGE")
+  // wasm {
+  //     browser()
+  //     nodejs()
+  // }
+  sourceSets {
+    val commonMain by getting {
+      dependencies {
+        implementation(projects.ktorFitAnnotation)
+        implementation(libs.bundles.ktor)
+      }
     }
-    jvmToolchain(17)
+    val jvmMain by getting {
+      kotlin.srcDir("build/generated/ksp/jvm/jvmMain/kotlin")
+    }
+  }
+  jvmToolchain(17)
 }
 
 dependencies {
-    // add("kspCommonMainMetadata", projects.ktorFitKsp)
-    add("kspJvm", projects.ktorFitKsp)
-    add("kspIosX64", projects.ktorFitKsp)
-    add("kspIosArm64", projects.ktorFitKsp)
-    add("kspIosSimulatorArm64", projects.ktorFitKsp)
+  // add("kspCommonMainMetadata", projects.ktorFitKsp)
+  add("kspJvm", projects.ktorFitKsp)
+  add("kspIosX64", projects.ktorFitKsp)
+  add("kspIosArm64", projects.ktorFitKsp)
+  add("kspIosSimulatorArm64", projects.ktorFitKsp)
 //    add("kspMacosX64", projects.ktorFitKsp)
 //    add("kspMacosArm64", projects.ktorFitKsp)
 //    add("kspLinuxX64", projects.ktorFitKsp)

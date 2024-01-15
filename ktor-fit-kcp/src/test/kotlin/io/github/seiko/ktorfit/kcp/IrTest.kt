@@ -20,7 +20,8 @@ class IrTest {
   fun testProxyApiClass() {
     // https://github.com/tschuchortdev/kotlin-compile-testing
     val apiSource = SourceFile.kotlin(
-      "ApiService.kt", """
+      "ApiService.kt",
+      """
         package com.g985892345.network
 
         import io.github.seiko.ktorfit.annotation.generator.GenerateApi
@@ -37,10 +38,11 @@ class IrTest {
             }
           }
         }
-      """.trimIndent()
+      """.trimIndent(),
     )
     val implSource = SourceFile.kotlin(
-      "_ApiServiceImpl.kt", """
+      "_ApiServiceImpl.kt",
+      """
         package com.g985892345.network
 
         import io.ktor.client.HttpClient
@@ -48,7 +50,7 @@ class IrTest {
         class _ApiServiceImpl(private val client: HttpClient) : ApiService {
           override fun get(): String = "get() success"
         }
-      """.trimIndent()
+      """.trimIndent(),
     )
     val clientSource = SourceFile.kotlin(
       "HttpClient.kt",
@@ -56,7 +58,7 @@ class IrTest {
         package io.ktor.client
 
         class HttpClient
-      """.trimIndent()
+      """.trimIndent(),
     )
     val result = KotlinCompilation().apply {
       sources = listOf(apiSource, implSource, clientSource)

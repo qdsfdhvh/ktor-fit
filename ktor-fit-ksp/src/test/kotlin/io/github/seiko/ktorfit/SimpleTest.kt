@@ -14,7 +14,8 @@ class SimpleTest {
   @Test
   fun `expect_class_simple_test01`() {
     val manualSource = SourceFile.kotlin(
-      "TestService.kt", """
+      "TestService.kt",
+      """
 
         import io.github.seiko.ktorfit.annotation.generator.GenerateApi
         import io.github.seiko.ktorfit.annotation.http.GET
@@ -30,7 +31,7 @@ class SimpleTest {
               @Query("name") name: String,
           ): String
         }
-      """.trimIndent()
+      """.trimIndent(),
     )
     val result = KotlinCompilation().apply {
       sources = listOf(manualSource)
@@ -41,11 +42,11 @@ class SimpleTest {
     assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
   }
 
-
   @Test
   fun `interface_simple_test01`() {
     val manualSource = SourceFile.kotlin(
-      "TestService.kt", """
+      "TestService.kt",
+      """
 
         import io.github.seiko.ktorfit.annotation.generator.GenerateApi
         import io.github.seiko.ktorfit.annotation.http.GET
@@ -61,7 +62,7 @@ class SimpleTest {
               @Query("name") name: String,
           ): String
         }
-      """.trimIndent()
+      """.trimIndent(),
     )
     val result = KotlinCompilation().apply {
       sources = listOf(manualSource)

@@ -140,11 +140,13 @@ private fun generateClassConstructorAndReturnClientName(
   val clientName = if (classDeclaration.isClass) {
     requireNotNull(
       classDeclaration.primaryConstructor?.parameters
-        ?.first { it.type.toTypeName() == HttpClient }?.name?.getShortName()
+        ?.first { it.type.toTypeName() == HttpClient }?.name?.getShortName(),
     ) {
       "Class constructor must include HttpClient"
     }
-  } else "client"
+  } else {
+    "client"
+  }
 
   if (classDeclaration.isClass) {
     classDeclaration.primaryConstructor?.parameters?.forEach { parameter ->
@@ -167,7 +169,7 @@ private fun generateClassConstructorAndReturnClientName(
       PropertySpec.builder(clientName, HttpClient)
         .initializer(clientName)
         .addModifiers(KModifier.PRIVATE)
-        .build()
+        .build(),
     )
   }
 

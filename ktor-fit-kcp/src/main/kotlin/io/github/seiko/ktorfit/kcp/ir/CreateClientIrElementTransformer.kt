@@ -91,7 +91,7 @@ internal class CreateClientIrElementTransformer(
     } ?: error(
       "can't find $HTTP_CLIENT_NAME in " +
         "${irClassDeclaration.packageFqName?.asString()}.${irClassDeclaration.name.asString()}" +
-        "#${createApiFunction.name.asString()} function"
+        "#${createApiFunction.name.asString()} function",
     )
 
     createApiFunction.body = DeclarationIrBuilder(pluginContext, createApiFunction.symbol).irBlockBody {
@@ -101,7 +101,7 @@ internal class CreateClientIrElementTransformer(
           typeArguments = listOf(),
         ).also { expression ->
           expression.putValueArgument(0, irGet(clientParameter))
-        }
+        },
       )
     }
   }
