@@ -1,5 +1,3 @@
-@file:OptIn(KspExperimental::class)
-
 package io.github.seiko.ktorfit
 
 import com.google.devtools.ksp.KspExperimental

@@ -5,6 +5,11 @@ plugins {
 }
 
 kotlin {
+  sourceSets.all {
+    languageSettings {
+      optIn("com.google.devtools.ksp.KspExperimental")
+    }
+  }
   jvmToolchain(17)
 }
 
