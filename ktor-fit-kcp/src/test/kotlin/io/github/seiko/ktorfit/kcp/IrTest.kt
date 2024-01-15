@@ -4,6 +4,7 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 /**
  * .
@@ -24,17 +25,16 @@ class IrTest {
 
         import io.github.seiko.ktorfit.annotation.generator.GenerateApi
         import io.ktor.client.HttpClient
+        import kotlin.jvm.JvmStatic
 
         @GenerateApi
-        class ApiService(val client: HttpClient) {
-          fun get(): String = error("kcp failure")
-
-          fun dumpTest() {
-            test(client)
-          }
-          
-          fun test(client: HttpClient) {
-            
+        interface ApiService {
+          fun get(): String = "get() failure"
+          companion object {
+            @JvmStatic
+            fun create(client: HttpClient) : ApiService {
+              error("kcp failure")
+            }
           }
         }
       """.trimIndent()
@@ -45,10 +45,8 @@ class IrTest {
 
         import io.ktor.client.HttpClient
 
-        object _ApiServiceImpl {
-          fun get(client: HttpClient): String {
-            return "kcp success"
-          }
+        class _ApiServiceImpl(private val client: HttpClient) : ApiService {
+          override fun get(): String = "get() success"
         }
       """.trimIndent()
     )
@@ -70,19 +68,21 @@ class IrTest {
       messageOutputStream = System.out // see diagnostics in real time
     }.compile()
 
-    assert(result.exitCode == KotlinCompilation.ExitCode.OK) {
-      result.messages
-    }
+    assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK, result.messages)
 
     println("\n=============================================\n")
 
-    val apiServiceClass = result.classLoader.loadClass("com.g985892345.network.ApiService")
     val clientClass = result.classLoader.loadClass("io.ktor.client.HttpClient")
     val client = clientClass.getDeclaredConstructor().newInstance()
-    val apiService = apiServiceClass.getDeclaredConstructor(clientClass).newInstance(client)
+
+    val apiServiceClass = result.classLoader.loadClass("com.g985892345.network.ApiService")
+    val createMethod = apiServiceClass.getMethod("create", clientClass)
+    val apiService = createMethod.invoke(null, client)
+
     val getMethod = apiServiceClass.getMethod("get")
     val getResult = getMethod.invoke(apiService)
+
     println(getResult)
-    assert(getResult == "kcp success")
+    assert(getResult == "get() success")
   }
 }

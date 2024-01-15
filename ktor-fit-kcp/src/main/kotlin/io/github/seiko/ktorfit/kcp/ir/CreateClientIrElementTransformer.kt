@@ -3,25 +3,20 @@ package io.github.seiko.ktorfit.kcp.ir
 import io.github.seiko.ktorfit.kcp.KtorfitIrContext
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
-import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.builders.irBlockBody
-import org.jetbrains.kotlin.ir.builders.irCall
+import org.jetbrains.kotlin.ir.builders.irCallConstructor
 import org.jetbrains.kotlin.ir.builders.irGet
-import org.jetbrains.kotlin.ir.builders.irGetObject
 import org.jetbrains.kotlin.ir.builders.irReturn
 import org.jetbrains.kotlin.ir.declarations.IrClass
-import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
-import org.jetbrains.kotlin.ir.declarations.IrValueParameter
-import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
+import org.jetbrains.kotlin.ir.declarations.IrFunction
+import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
+import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isClassType
-import org.jetbrains.kotlin.ir.util.dump
-import org.jetbrains.kotlin.ir.util.getPropertyGetter
-import org.jetbrains.kotlin.ir.util.getSimpleFunction
+import org.jetbrains.kotlin.ir.util.constructors
 import org.jetbrains.kotlin.ir.util.hasAnnotation
+import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.packageFqName
-import org.jetbrains.kotlin.ir.util.primaryConstructor
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.FqNameUnsafe
@@ -35,71 +30,93 @@ internal class CreateClientIrElementTransformer(
 
   override fun visitClassNew(declaration: IrClass): IrStatement {
     val transformed = super.visitClassNew(declaration)
-
-    if (!declaration.hasAnnotation(FqName(GENERATE_API_NAME))) {
+    if (!declaration.isInterface || !declaration.hasAnnotation(FqName(GENERATE_API_NAME))) {
       return transformed
     }
 
-    val implIrClassId = ClassId(
-      FqName(declaration.packageFqName!!.asString()),
-      FqName("_${declaration.name.asString()}Impl"),
-      false,
-    )
-    val implIrClassSymbol = pluginContext.referenceClass(implIrClassId)
-      ?: error("Network request proxy class generated for ${declaration.name.asString()} not found. " +
-        "Please check if KSP is correctly imported.")
+    val companionObject = findCompanionObject(declaration)
+    if (companionObject == null) {
+      logger.w { "no find companion object in ${declaration.packageFqName?.asString()}.${declaration.name.asString()}" }
+      return transformed
+    }
 
-    declaration.declarations.asSequence()
-      .filterIsInstance<IrSimpleFunction>()
+    val createApiFunction = findCreateApiFunction(companionObject, declaration.symbol)
+    if (createApiFunction == null) {
+      logger.w { "no find create api function in ${declaration.packageFqName?.asString()}.${declaration.name.asString()}" }
+      return transformed
+    }
+
+    createApiFunctionBody(
+      irClassDeclaration = declaration,
+      createApiFunction = createApiFunction,
+    )
+    return declaration
+  }
+
+  private fun findCompanionObject(interfaceClass: IrClass): IrClass? {
+    for (declaration in interfaceClass.declarations) {
+      if (declaration is IrClass && declaration.isCompanion) {
+        return declaration
+      }
+    }
+    return null
+  }
+
+  private fun findCreateApiFunction(
+    companionObject: IrClass,
+    returnSymbol: IrClassSymbol,
+  ): IrFunction? {
+    return companionObject.declarations.asSequence()
+      .filterIsInstance<IrFunction>()
       .filter { function ->
         function.name.asString()
           .let {
             it != "toString" && it != "hashCode" && it != "equals"
           }
       }
-      .mapNotNull { function ->
-        val implFunc = implIrClassSymbol.getSimpleFunction(function.name.asString())?.owner ?: return@mapNotNull null
-        if (implFunc.returnType == function.returnType
-          && implFunc.valueParameters.firstOrNull()?.type?.isClassType(FqNameUnsafe(HTTP_CLIENT_NAME), false) == true
-          && compareValueParameters(implFunc.valueParameters.drop(1), function.valueParameters)) {
-          function to implFunc
-        } else null
-      }
-      .forEach { pair ->
-        pair.first.body = DeclarationIrBuilder(pluginContext, pair.first.symbol).irBlockBody {
-          +irReturn(irCall(pair.second).also { expression ->
-            expression.dispatchReceiver = irGetObject(implIrClassSymbol)
-            expression.putValueArgument(
-              0,
-              irCall(getClientFunction(declaration)).apply { dispatchReceiver = irGet(pair.first.dispatchReceiverParameter!!) }
-            )
-          })
-        }.logDump()
-      }
-
-    return declaration
+      .filter { function ->
+        function.returnType.classifierOrNull == returnSymbol
+      }.firstOrNull()
   }
 
-  private fun getClientFunction(irClass: IrClass): IrSimpleFunctionSymbol {
-    val clientField = irClass.primaryConstructor!!.valueParameters.first {
+  private fun createApiFunctionBody(
+    irClassDeclaration: IrClass,
+    createApiFunction: IrFunction,
+  ) {
+    val implIrClassSymbol = requireImplIrClassSymbol(irClassDeclaration)
+
+    // find client parameter in function
+    val clientParameter = createApiFunction.valueParameters.firstOrNull {
       it.type.isClassType(FqNameUnsafe(HTTP_CLIENT_NAME), false)
+    } ?: error(
+      "can't find $HTTP_CLIENT_NAME in " +
+        "${irClassDeclaration.packageFqName?.asString()}.${irClassDeclaration.name.asString()}" +
+        "#${createApiFunction.name.asString()} function"
+    )
+
+    createApiFunction.body = DeclarationIrBuilder(pluginContext, createApiFunction.symbol).irBlockBody {
+      +irReturn(
+        irCallConstructor(
+          implIrClassSymbol.constructors.single(),
+          typeArguments = listOf(),
+        ).also { expression ->
+          expression.putValueArgument(0, irGet(clientParameter))
+        }
+      )
     }
-    return irClass.getPropertyGetter(clientField.name.asString())!!
   }
 
-  private fun compareValueParameters(parameter1: List<IrValueParameter>, parameter2: List<IrValueParameter>): Boolean {
-    if (parameter1.size != parameter2.size) return false
-    for (i in parameter1.indices) {
-      val p1 = parameter1[i]
-      val p2 = parameter2[i]
-      if (p1.name != p2.name || p1.type != p2.type) return false
-    }
-    return true
-  }
-
-  private fun <T : IrElement> T.logDump(): T {
-    logger.w { dump() }
-    return this
+  private fun requireImplIrClassSymbol(declaration: IrClass): IrClassSymbol {
+    val implIrClassId = ClassId(
+      FqName(declaration.packageFqName!!.asString()),
+      FqName("_${declaration.name.asString()}Impl"),
+      false,
+    )
+    return pluginContext.referenceClass(implIrClassId)
+      ?: error(
+        "Network request proxy class generated for _${declaration.name.asString()}Impl not found. " +
+          "Please check if KSP is correctly imported.",
+      )
   }
 
   companion object {

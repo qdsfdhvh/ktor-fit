@@ -59,7 +59,7 @@ class KtorfitClassVisitor(
     var className = classDeclaration.qualifiedName?.getShortName() ?: "<ERROR>"
 
     if (classDeclaration.isInterface) {
-      className += "Impl"
+      className = "_${className}Impl"
     }
 
     val fileBuilder = FileSpec.builder(packageName, className)
