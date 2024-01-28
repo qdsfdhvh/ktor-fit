@@ -15,9 +15,9 @@ expect class WanAndroidService1(client: HttpClient) : WanAndroidApi
 
 @GenerateApi
 interface WanAndroidService2 : WanAndroidApi {
-  companion object {
-    fun create(client: HttpClient): WanAndroidService2 {
-      error("kcp failure")
-    }
-  }
+  // companion object {
+  //   fun create(client: HttpClient): WanAndroidService2 {
+  //     error("kcp failure")
+  //   }
+  // }
 }

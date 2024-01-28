@@ -1,6 +1,7 @@
 package io.github.seiko.ktorfit.kcp.ir
 
-import io.github.seiko.ktorfit.kcp.KtorfitIrContext
+import io.github.seiko.ktorfit.kcp.KtorfitNames
+import io.github.seiko.ktorfit.kcp.KtorfitNames.HTTP_CLIENT_NAME
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.ir.IrStatement
@@ -26,13 +27,12 @@ internal class CreateClientIrElementTransformer(
 ) : IrElementTransformerVoidWithContext() {
 
   private val pluginContext get() = context.pluginContext
-  private val logger get() = context.logger
+  private val logger get() = context.baseContext.logger
 
   override fun visitClassNew(declaration: IrClass): IrStatement {
     val transformed = super.visitClassNew(declaration)
-    if (!declaration.isInterface || !declaration.hasAnnotation(FqName(GENERATE_API_NAME))) {
-      return transformed
-    }
+    if (!declaration.isInterface) return transformed
+    if (!declaration.hasAnnotation(KtorfitNames.GENERATE_API_NAME)) return transformed
 
     val companionObject = findCompanionObject(declaration)
     if (companionObject == null) {
@@ -87,9 +87,9 @@ internal class CreateClientIrElementTransformer(
 
     // find client parameter in function
     val clientParameter = createApiFunction.valueParameters.firstOrNull {
-      it.type.isClassType(FqNameUnsafe(HTTP_CLIENT_NAME), false)
+      it.type.isClassType(HTTP_CLIENT_NAME.toUnsafe(), false)
     } ?: error(
-      "can't find $HTTP_CLIENT_NAME in " +
+      "can't find ${HTTP_CLIENT_NAME.asString()} in " +
         "${irClassDeclaration.packageFqName?.asString()}.${irClassDeclaration.name.asString()}" +
         "#${createApiFunction.name.asString()} function",
     )
@@ -119,8 +119,7 @@ internal class CreateClientIrElementTransformer(
       )
   }
 
-  companion object {
-    private const val GENERATE_API_NAME = "io.github.seiko.ktorfit.annotation.generator.GenerateApi"
-    private const val HTTP_CLIENT_NAME = "io.ktor.client.HttpClient"
-  }
+  // companion object {
+  //   private const val HTTP_CLIENT_NAME = "io.ktor.client.HttpClient"
+  // }
 }

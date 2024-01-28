@@ -1,6 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
+
 plugins {
   alias(libs.plugins.kotlin.multiplatform)
   alias(libs.plugins.ksp)
+  id("io.github.qdsfdhvh.ktorfit")
 }
 
 kotlin {
@@ -60,4 +63,9 @@ dependencies {
 //    add("kspWatchosX64", projects.ktorFitKsp)
 //    add("kspWatchosArm64", projects.ktorFitKsp)
 //    add("kspJs",projects.ktorFitKsp)
+}
+
+// for test
+tasks.withType(KotlinCompile::class).all {
+  dependsOn(":ktor-fit-kcp:publishToMavenLocal")
 }
