@@ -68,7 +68,7 @@ class KtorfitClassVisitor(
       .build()
       .writeTo(
         codeGenerator = codeGenerator,
-        dependencies = Dependencies(true, classDeclaration.containingFile!!),
+        dependencies = Dependencies(false, classDeclaration.containingFile!!),
       )
   }
 }
