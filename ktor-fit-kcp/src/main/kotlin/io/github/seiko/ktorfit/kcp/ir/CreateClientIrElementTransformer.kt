@@ -19,8 +19,7 @@ import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isInterface
 import org.jetbrains.kotlin.ir.util.packageFqName
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.name.FqNameUnsafe
+import org.jetbrains.kotlin.name.Name
 
 internal class CreateClientIrElementTransformer(
   private val context: KtorfitIrContext,
@@ -83,7 +82,7 @@ internal class CreateClientIrElementTransformer(
     irClassDeclaration: IrClass,
     createApiFunction: IrFunction,
   ) {
-    val implIrClassSymbol = requireImplIrClassSymbol(irClassDeclaration)
+    val implIrClassIdSymbol = requireImplIrClassSymbol(irClassDeclaration)
 
     // find client parameter in function
     val clientParameter = createApiFunction.valueParameters.firstOrNull {
@@ -97,7 +96,7 @@ internal class CreateClientIrElementTransformer(
     createApiFunction.body = DeclarationIrBuilder(pluginContext, createApiFunction.symbol).irBlockBody {
       +irReturn(
         irCallConstructor(
-          implIrClassSymbol.constructors.single(),
+          implIrClassIdSymbol.constructors.single(),
           typeArguments = listOf(),
         ).also { expression ->
           expression.putValueArgument(0, irGet(clientParameter))
@@ -108,18 +107,14 @@ internal class CreateClientIrElementTransformer(
 
   private fun requireImplIrClassSymbol(declaration: IrClass): IrClassSymbol {
     val implIrClassId = ClassId(
-      FqName(declaration.packageFqName!!.asString()),
-      FqName("_${declaration.name.asString()}Impl"),
-      false,
+      requireNotNull(declaration.packageFqName),
+      Name.identifier("_${declaration.name.asString()}Impl"),
     )
+    // TODO can't find class in k2
     return pluginContext.referenceClass(implIrClassId)
       ?: error(
-        "Network request proxy class generated for _${declaration.name.asString()}Impl not found. " +
+        "Network request proxy class generated for ${implIrClassId.asString()} not found. " +
           "Please check if KSP is correctly imported.",
       )
   }
-
-  // companion object {
-  //   private const val HTTP_CLIENT_NAME = "io.ktor.client.HttpClient"
-  // }
 }

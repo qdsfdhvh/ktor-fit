@@ -33,6 +33,11 @@ kotlin {
   //     nodejs()
   // }
   sourceSets {
+    all {
+      languageSettings {
+        // languageVersion = "2.0"
+      }
+    }
     val commonMain by getting {
       dependencies {
         implementation(projects.ktorFitAnnotation)

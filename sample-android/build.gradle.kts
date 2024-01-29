@@ -12,6 +12,11 @@ kotlin {
   androidTarget()
   jvm()
   sourceSets {
+    all {
+      languageSettings {
+        // languageVersion = "2.0"
+      }
+    }
     commonMain {
       dependencies {
         implementation(compose.runtime)

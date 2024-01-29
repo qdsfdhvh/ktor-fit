@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.descriptors.impl.SimpleFunctionDescriptorImpl
 import org.jetbrains.kotlin.descriptors.impl.ValueParameterDescriptorImpl
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.descriptorUtil.module
 import org.jetbrains.kotlin.resolve.descriptorUtil.parents
@@ -25,14 +26,12 @@ internal class KtorfitResolveExtension(
   private val baseContext: KtorfitBaseContext,
 ) : SyntheticResolveExtension {
 
-  private val logger get() = baseContext.logger
-
   override fun getSyntheticCompanionObjectNameIfNeeded(thisDescriptor: ClassDescriptor): Name? {
     return if (thisDescriptor.isGenerateApiInterface) {
       // @GenerateApi always return companion object name
-      KtorfitNames.DEFAULT_COMPANION
+      SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT
     } else {
-      super.getSyntheticCompanionObjectNameIfNeeded(thisDescriptor)
+      null
     }
   }
 
@@ -40,7 +39,7 @@ internal class KtorfitResolveExtension(
     val result = super.getSyntheticFunctionNames(thisDescriptor)
     return if (thisDescriptor.isGenerateApiCompanion && result.none { it == KtorfitNames.CREATE_METHOD }) {
       // @GenerateApi companion object always has create function
-      result + listOf(Name.identifier("create"))
+      result + listOf(KtorfitNames.CREATE_METHOD)
     } else {
       result
     }
