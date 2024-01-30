@@ -19,10 +19,8 @@ internal class KtorfitIrGenerationExtension(
   override fun generate(moduleFragment: IrModuleFragment, pluginContext: IrPluginContext) {
     moduleFragment.transformChildrenVoid(
       CreateClientIrElementTransformer(
-        context = KtorfitIrContext(
-          pluginContext = pluginContext,
-          baseContext = baseContext,
-        ),
+        pluginContext = pluginContext,
+        baseContext = baseContext,
       ),
     )
   }

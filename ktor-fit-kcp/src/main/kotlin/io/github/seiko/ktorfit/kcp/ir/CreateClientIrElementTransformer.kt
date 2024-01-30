@@ -1,8 +1,10 @@
 package io.github.seiko.ktorfit.kcp.ir
 
+import io.github.seiko.ktorfit.kcp.KtorfitBaseContext
 import io.github.seiko.ktorfit.kcp.KtorfitNames
 import io.github.seiko.ktorfit.kcp.KtorfitNames.HTTP_CLIENT_NAME
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
+import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.backend.common.lower.irThrow
 import org.jetbrains.kotlin.ir.IrStatement
@@ -26,11 +28,10 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 
 internal class CreateClientIrElementTransformer(
-  private val context: KtorfitIrContext,
+  private val pluginContext: IrPluginContext,
+  private val baseContext: KtorfitBaseContext,
 ) : IrElementTransformerVoidWithContext() {
-
-  private val pluginContext get() = context.pluginContext
-  private val logger get() = context.baseContext.logger
+  private val logger get() = baseContext.logger
 
   private val waitToDoMap = mutableMapOf<ClassId, WaitToDo>()
 
