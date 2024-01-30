@@ -4,16 +4,19 @@ import io.github.seiko.ktorfit.kcp.KtorfitNames
 import io.github.seiko.ktorfit.kcp.KtorfitNames.HTTP_CLIENT_NAME
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
+import org.jetbrains.kotlin.backend.common.lower.irThrow
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.builders.irBlockBody
 import org.jetbrains.kotlin.ir.builders.irCallConstructor
 import org.jetbrains.kotlin.ir.builders.irGet
 import org.jetbrains.kotlin.ir.builders.irReturn
+import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isClassType
+import org.jetbrains.kotlin.ir.types.isNullableString
 import org.jetbrains.kotlin.ir.util.constructors
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isInterface
@@ -82,8 +85,6 @@ internal class CreateClientIrElementTransformer(
     irClassDeclaration: IrClass,
     createApiFunction: IrFunction,
   ) {
-    val implIrClassIdSymbol = requireImplIrClassSymbol(irClassDeclaration)
-
     // find client parameter in function
     val clientParameter = createApiFunction.valueParameters.firstOrNull {
       it.type.isClassType(HTTP_CLIENT_NAME.toUnsafe(), false)
@@ -93,28 +94,44 @@ internal class CreateClientIrElementTransformer(
         "#${createApiFunction.name.asString()} function",
     )
 
-    createApiFunction.body = DeclarationIrBuilder(pluginContext, createApiFunction.symbol).irBlockBody {
-      +irReturn(
-        irCallConstructor(
-          implIrClassIdSymbol.constructors.single(),
-          typeArguments = listOf(),
-        ).also { expression ->
-          expression.putValueArgument(0, irGet(clientParameter))
-        },
-      )
-    }
-  }
-
-  private fun requireImplIrClassSymbol(declaration: IrClass): IrClassSymbol {
     val implIrClassId = ClassId(
-      requireNotNull(declaration.packageFqName),
-      Name.identifier("_${declaration.name.asString()}Impl"),
+      requireNotNull(irClassDeclaration.packageFqName),
+      Name.identifier("_${irClassDeclaration.name.asString()}Impl"),
     )
-    // TODO can't find class in k2
-    return pluginContext.referenceClass(implIrClassId)
-      ?: error(
-        "Network request proxy class generated for ${implIrClassId.asString()} not found. " +
-          "Please check if KSP is correctly imported.",
-      )
+
+    val implIrClassIdSymbol = pluginContext.referenceClass(implIrClassId)
+
+    createApiFunction.body = DeclarationIrBuilder(pluginContext, createApiFunction.symbol).irBlockBody {
+      if (implIrClassIdSymbol != null) {
+        +irReturn(
+          irCallConstructor(
+            implIrClassIdSymbol.constructors.single(),
+            typeArguments = listOf(),
+          ).also { expression ->
+            expression.putValueArgument(0, irGet(clientParameter))
+          },
+        )
+      } else {
+        val constructor = context.irBuiltIns.throwableClass.owner.constructors
+          .firstOrNull {
+            it.valueParameters.size == 1 && it.valueParameters.first().type.isNullableString()
+          } ?: error("can't find throwable constructor")
+
+        +irThrow(
+          irCallConstructor(
+            constructor.symbol,
+            typeArguments = listOf(),
+          ).apply {
+            putValueArgument(
+              0,
+              irString(
+                "Network request impl class generated for ${implIrClassId.asFqNameString()} not found. " +
+                  "Please check if KSP is correctly imported.",
+              ),
+            )
+          },
+        )
+      }
+    }
   }
 }
