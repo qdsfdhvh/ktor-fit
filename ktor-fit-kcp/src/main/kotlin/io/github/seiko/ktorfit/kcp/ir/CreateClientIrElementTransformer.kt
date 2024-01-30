@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.types.isClassType
 import org.jetbrains.kotlin.ir.types.isNullableString
+import org.jetbrains.kotlin.ir.util.classId
 import org.jetbrains.kotlin.ir.util.constructors
 import org.jetbrains.kotlin.ir.util.hasAnnotation
 import org.jetbrains.kotlin.ir.util.isInterface
@@ -31,8 +32,24 @@ internal class CreateClientIrElementTransformer(
   private val pluginContext get() = context.pluginContext
   private val logger get() = context.baseContext.logger
 
+  private val waitToDoMap = mutableMapOf<ClassId, WaitToDo>()
+
   override fun visitClassNew(declaration: IrClass): IrStatement {
     val transformed = super.visitClassNew(declaration)
+
+    val classId = declaration.classId
+    if (classId != null && waitToDoMap.containsKey(classId)) {
+      logger.i { "visit impl class generated for ${classId.asFqNameString()}, generate real body." }
+      val waitToDo = waitToDoMap.remove(classId)!!
+      createApiFunctionBody(
+        irClass = waitToDo.irClass,
+        createApiIrFunction = waitToDo.createApiIrFunction,
+        implIrClassId = classId,
+        implIrClassIdSymbol = declaration.symbol,
+      )
+      return declaration
+    }
+
     if (!declaration.isInterface) return transformed
     if (!declaration.hasAnnotation(KtorfitNames.GENERATE_API_NAME)) return transformed
 
@@ -42,15 +59,15 @@ internal class CreateClientIrElementTransformer(
       return transformed
     }
 
-    val createApiFunction = findCreateApiFunction(companionObject, declaration.symbol)
-    if (createApiFunction == null) {
+    val createApiIrFunction = findCreateApiFunction(companionObject, declaration.symbol)
+    if (createApiIrFunction == null) {
       logger.w { "no find create api function in ${declaration.packageFqName?.asString()}.${declaration.name.asString()}" }
       return transformed
     }
 
-    createApiFunctionBody(
-      irClassDeclaration = declaration,
-      createApiFunction = createApiFunction,
+    tryCreateApiFunctionBody(
+      irClass = declaration,
+      createApiIrFunction = createApiIrFunction,
     )
     return declaration
   }
@@ -81,27 +98,40 @@ internal class CreateClientIrElementTransformer(
       }.firstOrNull()
   }
 
+  private fun tryCreateApiFunctionBody(
+    irClass: IrClass,
+    createApiIrFunction: IrFunction,
+  ) {
+    val implIrClassId = ClassId(
+      requireNotNull(irClass.packageFqName),
+      Name.identifier("_${irClass.name.asString()}Impl"),
+    )
+    createApiFunctionBody(
+      irClass = irClass,
+      createApiIrFunction = createApiIrFunction,
+      implIrClassId = implIrClassId,
+      implIrClassIdSymbol = pluginContext.referenceClass(implIrClassId),
+    )
+  }
+
   private fun createApiFunctionBody(
-    irClassDeclaration: IrClass,
-    createApiFunction: IrFunction,
+    irClass: IrClass,
+    createApiIrFunction: IrFunction,
+    implIrClassId: ClassId,
+    implIrClassIdSymbol: IrClassSymbol?,
   ) {
     // find client parameter in function
-    val clientParameter = createApiFunction.valueParameters.firstOrNull {
+    val clientParameter = createApiIrFunction.valueParameters.firstOrNull {
       it.type.isClassType(HTTP_CLIENT_NAME.toUnsafe(), false)
     } ?: error(
       "can't find ${HTTP_CLIENT_NAME.asString()} in " +
-        "${irClassDeclaration.packageFqName?.asString()}.${irClassDeclaration.name.asString()}" +
-        "#${createApiFunction.name.asString()} function",
+        "${irClass.packageFqName?.asString()}.${irClass.name.asString()}" +
+        "#${createApiIrFunction.name.asString()} function",
     )
 
-    val implIrClassId = ClassId(
-      requireNotNull(irClassDeclaration.packageFqName),
-      Name.identifier("_${irClassDeclaration.name.asString()}Impl"),
-    )
+    // val implIrClassIdSymbol = pluginContext.referenceClass(implIrClassId)
 
-    val implIrClassIdSymbol = pluginContext.referenceClass(implIrClassId)
-
-    createApiFunction.body = DeclarationIrBuilder(pluginContext, createApiFunction.symbol).irBlockBody {
+    createApiIrFunction.body = DeclarationIrBuilder(pluginContext, createApiIrFunction.symbol).irBlockBody {
       if (implIrClassIdSymbol != null) {
         +irReturn(
           irCallConstructor(
@@ -131,7 +161,19 @@ internal class CreateClientIrElementTransformer(
             )
           },
         )
+
+        // in k2, we might can't get impl class, put it in wait to do map until visit impl class
+        logger.i { "not find impl class generated for ${implIrClassId.asFqNameString()}, put in todo map." }
+        waitToDoMap[implIrClassId] = WaitToDo(
+          irClass = irClass,
+          createApiIrFunction = createApiIrFunction,
+        )
       }
     }
   }
+
+  private data class WaitToDo(
+    val irClass: IrClass,
+    val createApiIrFunction: IrFunction,
+  )
 }

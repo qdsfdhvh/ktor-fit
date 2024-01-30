@@ -14,7 +14,7 @@ kotlin {
   sourceSets {
     all {
       languageSettings {
-        // languageVersion = "2.0"
+        languageVersion = "2.0"
       }
     }
     commonMain {
