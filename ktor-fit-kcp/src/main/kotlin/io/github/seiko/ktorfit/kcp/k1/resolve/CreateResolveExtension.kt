@@ -1,4 +1,4 @@
-package io.github.seiko.ktorfit.kcp.k1
+package io.github.seiko.ktorfit.kcp.k1.resolve
 
 import io.github.seiko.ktorfit.kcp.KtorfitBaseContext
 import io.github.seiko.ktorfit.kcp.KtorfitNames
@@ -22,9 +22,11 @@ import org.jetbrains.kotlin.resolve.extensions.SyntheticResolveExtension
 import org.jetbrains.kotlin.types.KotlinTypeFactory
 import org.jetbrains.kotlin.types.TypeAttributes
 
-internal class KtorfitResolveExtension(
+internal class CreateResolveExtension(
   private val baseContext: KtorfitBaseContext,
 ) : SyntheticResolveExtension {
+
+  private val logger get() = baseContext.logger
 
   override fun getSyntheticCompanionObjectNameIfNeeded(thisDescriptor: ClassDescriptor): Name? {
     return if (thisDescriptor.isGenerateApiInterface) {
@@ -36,12 +38,11 @@ internal class KtorfitResolveExtension(
   }
 
   override fun getSyntheticFunctionNames(thisDescriptor: ClassDescriptor): List<Name> {
-    val result = super.getSyntheticFunctionNames(thisDescriptor)
-    return if (thisDescriptor.isGenerateApiCompanion && result.none { it == KtorfitNames.CREATE_METHOD }) {
-      // @GenerateApi companion object always has create function
-      result + listOf(KtorfitNames.CREATE_METHOD)
+    return if (thisDescriptor.isGenerateApiCompanion) {
+      logger.i { "k1: add create function in ${thisDescriptor.containingDeclaration.name}.Companion" }
+      listOf(KtorfitNames.CREATE_METHOD)
     } else {
-      result
+      emptyList()
     }
   }
 
@@ -61,6 +62,7 @@ internal class KtorfitResolveExtension(
       return
     }
 
+    logger.i { "k1: generate create body in ${thisDescriptor.name}.Companion" }
     result.add(createGenerateApiGetterDescriptor(thisDescriptor, generateApiInterfaceDescriptor))
   }
 

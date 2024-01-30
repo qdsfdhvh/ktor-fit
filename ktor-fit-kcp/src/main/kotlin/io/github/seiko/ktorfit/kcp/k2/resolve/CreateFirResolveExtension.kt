@@ -1,4 +1,4 @@
-package io.github.seiko.ktorfit.kcp.k2
+package io.github.seiko.ktorfit.kcp.k2.resolve
 
 import io.github.seiko.ktorfit.kcp.KtorfitBaseContext
 import io.github.seiko.ktorfit.kcp.KtorfitNames
@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.getContainingClassSymbol
+import org.jetbrains.kotlin.fir.analysis.checkers.getContainingDeclarationSymbol
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.utils.isInterface
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -34,6 +35,8 @@ internal class CreateFirResolveExtension(
   session: FirSession,
   private val baseContext: KtorfitBaseContext,
 ) : FirDeclarationGenerationExtension(session) {
+
+  private val logger get() = baseContext.logger
 
   companion object {
     private val PREDICATE = LookupPredicate.create {
@@ -66,7 +69,7 @@ internal class CreateFirResolveExtension(
     if (owner !is FirRegularClassSymbol) return null
     // Only generate new companion if class does not have one already
     if (owner.companionObjectSymbol != null) return null
-    println("create companion object in ${owner.name} ")
+    logger.i { "k2: create companion object in ${owner.name}" }
     return createCompanionObject(owner, Key).symbol
   }
 
@@ -74,7 +77,6 @@ internal class CreateFirResolveExtension(
     classSymbol: FirClassSymbol<*>,
     context: MemberGenerationContext,
   ): Set<Name> {
-    println("getCallableNamesForClass ${classSymbol.name}")
     if (classSymbol.classKind != ClassKind.OBJECT) return emptySet()
     if (classSymbol !is FirRegularClassSymbol) return emptySet()
     val classId = classSymbol.classId
@@ -84,7 +86,7 @@ internal class CreateFirResolveExtension(
       return emptySet()
     }
     val origin = classSymbol.origin as? FirDeclarationOrigin.Plugin
-    println("generate create function in ${classSymbol.name}")
+    logger.i { "k2: add create function in ${classSymbol.getContainingDeclarationSymbol(session)?.name}.Companion" }
     return if (origin?.key == Key) {
       setOf(KtorfitNames.CREATE_METHOD, SpecialNames.INIT)
     } else {
@@ -92,7 +94,6 @@ internal class CreateFirResolveExtension(
     }
   }
 
-  // init of companion object
   override fun generateConstructors(context: MemberGenerationContext): List<FirConstructorSymbol> {
     val constructor = createDefaultPrivateConstructor(context.owner, Key)
     return listOf(constructor.symbol)
@@ -111,6 +112,7 @@ internal class CreateFirResolveExtension(
 
     val interfaceOwner = owner.getContainingClassSymbol(session) as? FirClassSymbol<*> ?: return emptyList()
 
+    logger.i { "k2: generate create body in ${interfaceOwner.name}.Companion" }
     val function = createMemberFunction(
       owner,
       Key,

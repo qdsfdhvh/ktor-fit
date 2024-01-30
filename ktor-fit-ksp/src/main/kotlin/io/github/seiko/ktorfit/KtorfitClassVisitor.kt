@@ -53,6 +53,8 @@ class KtorfitClassVisitor(
   private val codeGenerator: CodeGenerator,
 ) : KSVisitorVoid() {
   override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+    if (!checkIsValidGenerateApiClass(classDeclaration)) return
+
     val packageName = classDeclaration.packageName.asString()
     var className = classDeclaration.qualifiedName?.getShortName() ?: "<ERROR>"
 
@@ -70,6 +72,12 @@ class KtorfitClassVisitor(
         codeGenerator = codeGenerator,
         dependencies = Dependencies(false, classDeclaration.containingFile!!),
       )
+  }
+
+  private fun checkIsValidGenerateApiClass(classDeclaration: KSClassDeclaration): Boolean {
+    if (classDeclaration.isInterface) return true
+    if (classDeclaration.isClass && classDeclaration.isExpect) return true
+    return false
   }
 }
 
