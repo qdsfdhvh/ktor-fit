@@ -78,9 +78,11 @@ internal class CreateFirResolveExtension(
     if (classSymbol.classKind != ClassKind.OBJECT) return emptySet()
     if (classSymbol !is FirRegularClassSymbol) return emptySet()
     val classId = classSymbol.classId
-    if (!classId.isNestedClass
-      || classId.shortClassName != SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT
-    ) return emptySet()
+    if (!classId.isNestedClass ||
+      classId.shortClassName != SpecialNames.DEFAULT_NAME_FOR_COMPANION_OBJECT
+    ) {
+      return emptySet()
+    }
     val origin = classSymbol.origin as? FirDeclarationOrigin.Plugin
     println("generate create function in ${classSymbol.name}")
     return if (origin?.key == Key) {
@@ -113,7 +115,7 @@ internal class CreateFirResolveExtension(
       owner,
       Key,
       callableId.callableName,
-      interfaceOwner.constructStarProjectedType()
+      interfaceOwner.constructStarProjectedType(),
     ) {
       valueParameter(
         KtorfitNames.CLIENT_NAME,

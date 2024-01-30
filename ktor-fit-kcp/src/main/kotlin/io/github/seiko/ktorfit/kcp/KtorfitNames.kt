@@ -2,7 +2,6 @@ package io.github.seiko.ktorfit.kcp
 
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.name.SpecialNames
 
 object KtorfitNames {
   // FqName

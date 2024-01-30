@@ -69,16 +69,16 @@ internal class KtorfitResolveExtension(
     generateApiInterface: ClassDescriptor,
   ): SimpleFunctionDescriptor {
     return SimpleFunctionDescriptorImpl.create(
-        companionClass,
-        Annotations.EMPTY,
-        KtorfitNames.CREATE_METHOD,
-        CallableMemberDescriptor.Kind.SYNTHESIZED,
-        companionClass.source,
+      companionClass,
+      Annotations.EMPTY,
+      KtorfitNames.CREATE_METHOD,
+      CallableMemberDescriptor.Kind.SYNTHESIZED,
+      companionClass.source,
     ).apply {
       val returnType = KotlinTypeFactory.simpleNotNullType(
-          TypeAttributes.Empty,
-          generateApiInterface,
-          emptyList(),
+        TypeAttributes.Empty,
+        generateApiInterface,
+        emptyList(),
       )
 
       val httpClientClass = generateApiInterface.module.findClassAcrossModuleDependencies(
@@ -87,32 +87,31 @@ internal class KtorfitResolveExtension(
 
       @Suppress("DEPRECATION")
       initialize(
-          null,
-          companionClass.thisAsReceiverParameter,
-          emptyList(),
-          listOf(
-              ValueParameterDescriptorImpl(
-                  containingDeclaration = this,
-                  original = null,
-                  index = 0,
-                  annotations = Annotations.EMPTY,
-                  name = KtorfitNames.CLIENT_NAME,
-                  outType = httpClientClass.defaultType,
-                  declaresDefaultValue = false,
-                  isCrossinline = false,
-                  isNoinline = false,
-                  varargElementType = null,
-                  source = this.source,
-              ),
+        null,
+        companionClass.thisAsReceiverParameter,
+        emptyList(),
+        listOf(
+          ValueParameterDescriptorImpl(
+            containingDeclaration = this,
+            original = null,
+            index = 0,
+            annotations = Annotations.EMPTY,
+            name = KtorfitNames.CLIENT_NAME,
+            outType = httpClientClass.defaultType,
+            declaresDefaultValue = false,
+            isCrossinline = false,
+            isNoinline = false,
+            varargElementType = null,
+            source = this.source,
           ),
-          returnType,
-          Modality.FINAL,
-          DescriptorVisibilities.PUBLIC,
+        ),
+        returnType,
+        Modality.FINAL,
+        DescriptorVisibilities.PUBLIC,
       )
     }
   }
 }
-
 
 private fun getGenerateApiInterfaceDescriptorByCompanion(companion: ClassDescriptor): ClassDescriptor? {
   if (!companion.isCompanionObject) return null
