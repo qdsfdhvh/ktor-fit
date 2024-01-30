@@ -136,9 +136,10 @@ private fun generateClassConstructorAndReturnClientName(
   val constructorBuilder = FunSpec.constructorBuilder()
 
   val clientName = if (classDeclaration.isClass) {
+    // TODO: wait fix typeName equals in KSP2
     requireNotNull(
       classDeclaration.primaryConstructor?.parameters
-        ?.first { it.type.toTypeName() == HttpClient }?.name?.getShortName(),
+        ?.firstOrNull { it.type.toTypeName() == HttpClient }?.name?.getShortName(),
     ) {
       "Class constructor must include HttpClient"
     }
