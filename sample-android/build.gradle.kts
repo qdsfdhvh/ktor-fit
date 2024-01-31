@@ -89,6 +89,6 @@ dependencies {
 }
 
 // for test
-tasks.withType(KotlinCompile::class).all {
-  dependsOn(":ktor-fit-kcp:publishToMavenLocal")
-}
+// tasks.withType(KotlinCompile::class).all {
+//   dependsOn(":ktor-fit-kcp:publishToMavenLocal")
+// }
