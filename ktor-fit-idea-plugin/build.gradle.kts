@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-  implementation(projects.ktorFitIdeaPlugin)
+  implementation(projects.ktorFitKcp)
 }
 
 // Configure Gradle IntelliJ Plugin
