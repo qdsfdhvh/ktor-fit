@@ -8,9 +8,9 @@ plugins {
 
 kotlin {
   jvm()
-//  iosX64()
-//  iosArm64()
-//  iosSimulatorArm64()
+  iosX64()
+  iosArm64()
+  iosSimulatorArm64()
 //    macosX64()
 //    macosArm64()
 //    linuxX64()
@@ -35,7 +35,7 @@ kotlin {
   sourceSets {
     all {
       languageSettings {
-        languageVersion = "2.0"
+        // languageVersion = "2.0"
       }
     }
     commonMain {
@@ -61,9 +61,9 @@ kotlin {
 dependencies {
   // add("kspCommonMainMetadata", projects.ktorFitKsp)
   add("kspJvm", projects.ktorFitKsp)
-//  add("kspIosX64", projects.ktorFitKsp)
-//  add("kspIosArm64", projects.ktorFitKsp)
-//  add("kspIosSimulatorArm64", projects.ktorFitKsp)
+  add("kspIosX64", projects.ktorFitKsp)
+  add("kspIosArm64", projects.ktorFitKsp)
+  add("kspIosSimulatorArm64", projects.ktorFitKsp)
 //    add("kspMacosX64", projects.ktorFitKsp)
 //    add("kspMacosArm64", projects.ktorFitKsp)
 //    add("kspLinuxX64", projects.ktorFitKsp)

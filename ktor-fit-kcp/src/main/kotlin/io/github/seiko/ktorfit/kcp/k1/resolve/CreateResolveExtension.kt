@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.types.KotlinTypeFactory
 import org.jetbrains.kotlin.types.TypeAttributes
 
 open class CreateResolveExtension(
-  private val baseContext: KtorfitBaseContext,
+  private val baseContext: KtorfitBaseContext = KtorfitBaseContext.EMPTY,
 ) : SyntheticResolveExtension {
 
   private val logger get() = baseContext.logger
