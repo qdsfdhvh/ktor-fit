@@ -38,13 +38,20 @@ kotlin {
         languageVersion = "2.0"
       }
     }
-    val commonMain by getting {
+    commonMain {
       dependencies {
         implementation(projects.ktorFitAnnotation)
         implementation(libs.bundles.ktor)
       }
     }
-    val jvmMain by getting {
+    commonTest {
+      dependencies {
+        implementation(kotlin("test"))
+        implementation(libs.kotlinx.coroutines.test)
+        implementation(libs.ktor.client.mock)
+      }
+    }
+    jvmMain {
       kotlin.srcDir("build/generated/ksp/jvm/jvmMain/kotlin")
     }
   }
