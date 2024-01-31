@@ -2,7 +2,6 @@ package io.github.seiko.ktorfit.kcp
 
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
-import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -15,7 +14,6 @@ import kotlin.test.assertEquals
 
 class IrTest {
 
-  @OptIn(ExperimentalCompilerApi::class)
   @Test
   fun testProxyApiClass() {
     // https://github.com/tschuchortdev/kotlin-compile-testing
@@ -52,27 +50,8 @@ class IrTest {
         }
       """.trimIndent(),
     )
-    val clientSource = SourceFile.kotlin(
-      "HttpClient.kt",
-      """
-        package io.ktor.client
-
-        class HttpClient
-      """.trimIndent(),
-    )
-    val result = KotlinCompilation().apply {
-      sources = listOf(apiSource, implSource, clientSource)
-
-      // pass your own instance of a compiler plugin
-      compilerPluginRegistrars = listOf(KtorfitPluginRegistrar())
-
-      inheritClassPath = true
-      messageOutputStream = System.out // see diagnostics in real time
-    }.compile()
-
-    assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK, result.messages)
-
-    println("\n=============================================\n")
+    val result = kotlinCompilation(apiSource, implSource, clientSource)
+    assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
 
     val clientClass = result.classLoader.loadClass("io.ktor.client.HttpClient")
     val client = clientClass.getDeclaredConstructor().newInstance()
@@ -84,7 +63,42 @@ class IrTest {
     val getMethod = apiServiceClass.getMethod("get")
     val getResult = getMethod.invoke(apiService)
 
-    println(getResult)
-    assert(getResult == "get() success")
+    assertEquals(getResult, "get() success")
   }
+
+  @Test
+  fun testErrorEnumClass() {
+    val apiSource = SourceFile.kotlin(
+      "ApiService.kt",
+      """
+        package com.g985892345.network
+
+        import io.github.seiko.ktorfit.annotation.generator.GenerateApi
+
+        @GenerateApi
+        enum class ApiService
+      """.trimIndent(),
+    )
+    val result = kotlinCompilation(apiSource)
+    assertEquals(result.exitCode, KotlinCompilation.ExitCode.COMPILATION_ERROR)
+  }
+
+  private fun kotlinCompilation(vararg files: SourceFile) = KotlinCompilation().apply {
+    sources = files.toList()
+
+    // pass your own instance of a compiler plugin
+    compilerPluginRegistrars = listOf(KtorfitPluginRegistrar())
+
+    inheritClassPath = true
+    messageOutputStream = System.out // see diagnostics in real time
+  }.compile()
+
+  private val clientSource get() = SourceFile.kotlin(
+    "HttpClient.kt",
+    """
+        package io.ktor.client
+
+        class HttpClient
+    """.trimIndent(),
+  )
 }
