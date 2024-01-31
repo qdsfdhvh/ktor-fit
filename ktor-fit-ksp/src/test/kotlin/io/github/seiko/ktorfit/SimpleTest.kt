@@ -3,6 +3,7 @@ package io.github.seiko.ktorfit
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspIncremental
+import com.tschuchort.compiletesting.kspIncrementalLog
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import kotlin.test.Test
@@ -38,6 +39,7 @@ class SimpleTest {
       symbolProcessorProviders = listOf(KtorfitProcessorProvider())
       inheritClassPath = true
       kspIncremental = true
+      kspIncrementalLog = true
     }.compile()
     assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
   }
@@ -69,6 +71,7 @@ class SimpleTest {
       symbolProcessorProviders = listOf(KtorfitProcessorProvider())
       inheritClassPath = true
       kspIncremental = true
+      kspIncrementalLog = true
     }.compile()
     assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
   }

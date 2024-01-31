@@ -15,6 +15,7 @@ kotlin {
 
 dependencies {
   compileOnly(libs.ksp.api)
+  testCompileOnly(libs.ksp.api)
   implementation(projects.ktorFitAnnotation)
   implementation(libs.kotlinpoet.ksp)
   testImplementation(kotlin("test"))
