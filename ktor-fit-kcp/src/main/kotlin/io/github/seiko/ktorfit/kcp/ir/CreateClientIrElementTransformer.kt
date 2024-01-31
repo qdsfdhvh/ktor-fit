@@ -130,8 +130,6 @@ internal class CreateClientIrElementTransformer(
         "#${createApiIrFunction.name.asString()} function",
     )
 
-    // val implIrClassIdSymbol = pluginContext.referenceClass(implIrClassId)
-
     createApiIrFunction.body = DeclarationIrBuilder(pluginContext, createApiIrFunction.symbol).irBlockBody {
       if (implIrClassIdSymbol != null) {
         +irReturn(

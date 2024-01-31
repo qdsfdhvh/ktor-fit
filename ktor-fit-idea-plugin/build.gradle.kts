@@ -6,12 +6,12 @@ plugins {
 // 这里覆盖 settings.gradle.kts 中的 dependencyResolutionManagement
 // 不然会 build 失败，不清楚原因
 repositories {
-  mavenCentral()
   mavenLocal()
+  mavenCentral()
 }
 
 dependencies {
-  implementation(project(":ktor-fit-kcp"))
+  implementation(projects.ktorFitIdeaPlugin)
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -23,15 +23,19 @@ intellij {
   plugins.set(listOf("Kotlin"))
 }
 
+kotlin {
+  jvmToolchain(17)
+}
+
 tasks {
-  // Set the JVM compatibility versions
-  withType<JavaCompile> {
-    sourceCompatibility = "17"
-    targetCompatibility = "17"
-  }
-  withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
-  }
+  // // Set the JVM compatibility versions
+  // withType<JavaCompile> {
+  //   sourceCompatibility = "17"
+  //   targetCompatibility = "17"
+  // }
+  // withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  //   kotlinOptions.jvmTarget = "17"
+  // }
 
   patchPluginXml {
     sinceBuild.set("222")
