@@ -20,29 +20,30 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.defaultRequest
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            MaterialTheme {
-                Scaffold { innerPadding ->
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(innerPadding),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-                    ) {
-                        val text by produceState("") {
-                            val client = HttpClient(OkHttp) {
-                                defaultRequest {
-                                    url("https://www.wanandroid.com/")
-                                }
-                            }
-                            val api = WanAndroidApi(client)
-                            value = api.articleList()
-                        }
-                        Text(text)
-                    }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContent {
+      MaterialTheme {
+        Scaffold { innerPadding ->
+          Column(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+          ) {
+            val text by produceState("") {
+              val client = HttpClient(OkHttp) {
+                defaultRequest {
+                  url("https://www.wanandroid.com/")
                 }
+              }
+              // val api = WanAndroidService1(client)
+              val api = WanAndroidService2.create(client)
+              value = api.articleList()
             }
+            Text(text)
+          }
         }
+      }
     }
+  }
 }
