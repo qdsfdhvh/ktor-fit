@@ -5,18 +5,18 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.config.CompilerConfiguration
 
-internal class KtorfitLogger(configuration: CompilerConfiguration) {
+class KtorfitLogger(configuration: CompilerConfiguration?) {
 
-  private val logger = configuration.get(
+  private val logger = configuration?.get(
     CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY,
     MessageCollector.NONE,
   )
 
   fun i(message: () -> String) {
-    logger.report(CompilerMessageSeverity.INFO, message())
+    logger?.report(CompilerMessageSeverity.INFO, message())
   }
 
   fun w(message: () -> String) {
-    logger.report(CompilerMessageSeverity.WARNING, message())
+    logger?.report(CompilerMessageSeverity.WARNING, message())
   }
 }
