@@ -8,13 +8,13 @@
   <name>KtorfitPlugin</name>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-  <vendor email="seiko_des@outlook.com">SeikoDes</vendor>
+  <vendor email="seiko_des@outlook.com" url="https://github.com/qdsfdhvh">SeikoDes</vendor>
 
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
   <description><![CDATA[
-    [Ktor-fit](https://github.com/qdsfdhvh/ktor-fit) plugin for IntelliJ IDEA.
+    Ktor-fit Plugin make the synthetic 'create(HttpClient)' function available in IntelliJ IDEA.
   ]]></description>
 
   <!-- Product and plugin compatibility requirements.
@@ -25,7 +25,7 @@
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="org.jetbrains.kotlin">
-    <syntheticResolveExtension
-      implementation="io.github.seiko.ktorfit.idea.IdeCreateResolveExtension"/>
+    <syntheticResolveExtension implementation="io.github.seiko.ktorfit.idea.k1.IdeCreateResolveExtension" />
+    <storageComponentContainerContributor implementation="io.github.seiko.ktorfit.idea.k1.IdeKtorfitComponentContainerContributor" />
   </extensions>
 </idea-plugin>

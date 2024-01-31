@@ -7,8 +7,8 @@ import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.platform.TargetPlatform
 
-internal class KtorfitComponentContainerContributor(
-  private val baseContext: KtorfitBaseContext,
+open class KtorfitComponentContainerContributor(
+  private val baseContext: KtorfitBaseContext = KtorfitBaseContext.EMPTY,
 ) : StorageComponentContainerContributor {
   override fun registerModuleComponents(
     container: StorageComponentContainer,
