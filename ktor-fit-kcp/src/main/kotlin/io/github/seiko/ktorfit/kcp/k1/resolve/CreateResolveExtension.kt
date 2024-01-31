@@ -62,13 +62,33 @@ open class CreateResolveExtension(
       return
     }
 
+    val httpClientClass = thisDescriptor.module.findClassAcrossModuleDependencies(
+      ClassId.topLevel(KtorfitNames.HTTP_CLIENT_NAME),
+    ) ?: error("can't find ${KtorfitNames.HTTP_CLIENT_NAME}, is ktor by dependency?")
+
+    if (result.any { function ->
+        function.name == KtorfitNames.CREATE_METHOD &&
+          function.valueParameters.any { it.type == httpClientClass.defaultType }
+      }
+    ) {
+      // create function already exists
+      return
+    }
+
     logger.i { "k1: generate create body in ${thisDescriptor.name}.Companion" }
-    result.add(createGenerateApiGetterDescriptor(thisDescriptor, generateApiInterfaceDescriptor))
+    result.add(
+      createGenerateApiGetterDescriptor(
+        companionClass = thisDescriptor,
+        generateApiInterface = generateApiInterfaceDescriptor,
+        httpClientClass = httpClientClass,
+      ),
+    )
   }
 
   private fun createGenerateApiGetterDescriptor(
     companionClass: ClassDescriptor,
     generateApiInterface: ClassDescriptor,
+    httpClientClass: ClassDescriptor,
   ): SimpleFunctionDescriptor {
     return SimpleFunctionDescriptorImpl.create(
       companionClass,
@@ -82,10 +102,6 @@ open class CreateResolveExtension(
         generateApiInterface,
         emptyList(),
       )
-
-      val httpClientClass = generateApiInterface.module.findClassAcrossModuleDependencies(
-        ClassId.topLevel(KtorfitNames.HTTP_CLIENT_NAME),
-      ) ?: error("can't find ${KtorfitNames.HTTP_CLIENT_NAME}, is ktor by dependency?")
 
       @Suppress("DEPRECATION")
       initialize(

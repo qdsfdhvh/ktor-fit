@@ -6,6 +6,14 @@ plugins {
 
 kotlin {
   jvmToolchain(17)
+  sourceSets {
+    all {
+      languageSettings {
+        // languageVersion = "2.0"
+        optIn("org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")
+      }
+    }
+  }
 }
 
 dependencies {
