@@ -74,8 +74,3 @@ dependencies {
 //    add("kspWatchosArm64", projects.ktorFitKsp)
 //    add("kspJs",projects.ktorFitKsp)
 }
-
-// for test
-// tasks.withType(KotlinCompile::class).all {
-//   dependsOn(":ktor-fit-kcp:publishToMavenLocal")
-// }

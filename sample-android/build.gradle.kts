@@ -85,8 +85,3 @@ dependencies {
   add("kspAndroid", projects.ktorFitKsp)
   add("kspJvm", projects.ktorFitKsp)
 }
-
-// for test
-// tasks.withType(KotlinCompile::class).all {
-//   dependsOn(":ktor-fit-kcp:publishToMavenLocal")
-// }
