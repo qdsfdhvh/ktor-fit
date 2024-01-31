@@ -59,4 +59,10 @@ allprojects {
       }
     }
   }
+
+  configurations.configureEach {
+    resolutionStrategy.dependencySubstitution {
+      substitute(module("io.github.qdsfdhvh:ktor-fit-kcp")).using(project(":ktor-fit-kcp"))
+    }
+  }
 }
