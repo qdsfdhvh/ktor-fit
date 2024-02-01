@@ -2,10 +2,8 @@
 <idea-plugin>
   <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
   <id>io.github.seiko.ktorfit.plugin</id>
-
-  <!-- Public plugin name should be written in Title Case.
-       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
   <name>KtorfitPlugin</name>
+  <version>1.9.20-1.0.1</version>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
   <vendor email="seiko_des@outlook.com" url="https://github.com/qdsfdhvh">SeikoDes</vendor>
