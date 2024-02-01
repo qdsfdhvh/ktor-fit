@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.resolve.extensions.SyntheticResolveExtension
 import org.jetbrains.kotlin.types.KotlinTypeFactory
 import org.jetbrains.kotlin.types.TypeAttributes
 
-open class CreateResolveExtension(
+open class CreateResolveExtension @JvmOverloads constructor(
   private val baseContext: KtorfitBaseContext = KtorfitBaseContext.EMPTY,
 ) : SyntheticResolveExtension {
 
