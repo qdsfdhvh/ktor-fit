@@ -29,14 +29,17 @@ intellij {
 }
 
 tasks {
+  val pluginName = "ktor-fit-idea-extensions"
+  val pluginVersion = "1.0.0"
+
   patchPluginXml {
-    version.set("${project.version}")
+    version.set(pluginVersion)
     sinceBuild.set("222")
     untilBuild.set("233.*")
   }
 
   buildPlugin {
-    archiveFileName = "${project.name}-${project.version}.zip"
+    archiveFileName = "${pluginName}-${project.version}.zip"
   }
 
   val file = project.file("signing.properties")
@@ -48,12 +51,12 @@ tasks {
       certificateChainFile.set(file(signingProp.getProperty("CERTIFICATE_CHAIN")))
       privateKeyFile.set(file(signingProp.getProperty("PRIVATE_KEY")))
       password.set(signingProp.getProperty("PRIVATE_KEY_PASSWORD"))
-      inputArchiveFile.set(layout.buildDirectory.file("distributions/${project.name}-${project.version}.zip").get().asFile)
-      outputArchiveFile.set(layout.buildDirectory.file("distributions/${project.name}-${project.version}-signed.zip").get().asFile)
+      inputArchiveFile.set(layout.buildDirectory.file("distributions/${pluginName}-${project.version}.zip").get().asFile)
+      outputArchiveFile.set(layout.buildDirectory.file("distributions/${pluginName}-${project.version}-signed.zip").get().asFile)
     }
 
     publishPlugin {
-      distributionFile.set(layout.buildDirectory.file("distributions/${project.name}-${project.version}-signed.zip").get().asFile)
+      distributionFile.set(layout.buildDirectory.file("distributions/${pluginName}-${project.version}-signed.zip").get().asFile)
       token.set(signingProp.getProperty("INTELLIJ_TOKEN"))
     }
   }
