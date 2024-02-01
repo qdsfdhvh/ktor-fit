@@ -39,7 +39,7 @@ tasks {
   }
 
   buildPlugin {
-    archiveFileName = "${pluginName}-${project.version}.zip"
+    archiveFileName = "$pluginName-${project.version}.zip"
   }
 
   val file = project.file("signing.properties")
@@ -51,12 +51,12 @@ tasks {
       certificateChainFile.set(file(signingProp.getProperty("CERTIFICATE_CHAIN")))
       privateKeyFile.set(file(signingProp.getProperty("PRIVATE_KEY")))
       password.set(signingProp.getProperty("PRIVATE_KEY_PASSWORD"))
-      inputArchiveFile.set(layout.buildDirectory.file("distributions/${pluginName}-${project.version}.zip").get().asFile)
-      outputArchiveFile.set(layout.buildDirectory.file("distributions/${pluginName}-${project.version}-signed.zip").get().asFile)
+      inputArchiveFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}.zip").get().asFile)
+      outputArchiveFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}-signed.zip").get().asFile)
     }
 
     publishPlugin {
-      distributionFile.set(layout.buildDirectory.file("distributions/${pluginName}-${project.version}-signed.zip").get().asFile)
+      distributionFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}-signed.zip").get().asFile)
       token.set(signingProp.getProperty("INTELLIJ_TOKEN"))
     }
   }
