@@ -30,7 +30,7 @@ intellij {
 
 tasks {
   val pluginName = "ktor-fit-extensions"
-  val pluginVersion = "1.0.0"
+  val pluginVersion = "0.0.2"
 
   patchPluginXml {
     version.set(pluginVersion)
