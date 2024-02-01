@@ -2,7 +2,7 @@
 <idea-plugin>
   <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
   <id>io.github.seiko.ktorfit.plugin</id>
-  <name>Ktorfit Idea Extensions</name>
+  <name>Ktor-Fit Extensions</name>
   <version>1.9.20-1.0.1</version>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
@@ -12,7 +12,7 @@
        Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
   <description><![CDATA[
-    Ktor-fit Idea Extensions make the synthetic 'create(HttpClient)' function available in IntelliJ IDEA.
+    Ktor-Fit Extensions make the synthetic 'create(HttpClient)' function available in IntelliJ IDEA.
   ]]></description>
 
   <!-- Product and plugin compatibility requirements.

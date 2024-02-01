@@ -29,7 +29,7 @@ intellij {
 }
 
 tasks {
-  val pluginName = "ktor-fit-idea-extensions"
+  val pluginName = "ktor-fit-extensions"
   val pluginVersion = "1.0.0"
 
   patchPluginXml {
