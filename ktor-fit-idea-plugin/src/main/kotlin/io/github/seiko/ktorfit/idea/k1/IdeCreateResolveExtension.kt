@@ -1,4 +1,4 @@
-package io.github.seiko.ktorfit.idea
+package io.github.seiko.ktorfit.idea.k1
 
 import io.github.seiko.ktorfit.kcp.k1.resolve.CreateResolveExtension
 
