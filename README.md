@@ -35,7 +35,9 @@ dependencies {
 
 ## How to Use
 
-Create a kotlin expect class
+### 1.Only Ksp
+
+You can create a kotlin expect class, ksp will generate the actual class.
 
 ```kotlin
 @Suppress("NO_ACTUAL_FOR_EXPECT")
@@ -56,7 +58,7 @@ interface TestOtherApi2 {
 }
 ```
 
-And then create api
+And then create api:
 
 ```kotlin
 val client = HttpClient {
@@ -66,6 +68,59 @@ val client = HttpClient {
 }
 val api = TestService(client)
 ```
+
+### 2. Ksp and Kcp
+
+This way is still experimental:
+
+```kotlin
+plugins {
+    id("io.github.qdsfdhvh.ktor-fit-plugin") version $ktorfit_version
+}
+```
+
+```kotlin
+@GenerateApi
+interface TestService {
+    //...
+}
+```
+
+ksp will auto generate code like:
+
+```kotlin
+class _TestServiceImpl(private val client: HttpClient) : TestService {
+    //...
+}
+```
+
+and kcp will auto generate code like:
+
+```kotlin
+interface TestService {
+    //...
+    companion object {
+        fun create(client: HttpClient): TestService {
+            return _TestServiceImpl(client)
+        }
+    }
+}
+```
+
+so, you can use like this:
+
+```kotlin
+val client = HttpClient {
+  defaultRequest {
+    url("https://example.api/")
+  }
+}
+val api = TestService.create(client)
+```
+
+however, at the moment you need the [ktor-fit-extensions](https://plugins.jetbrains.com/plugin/23688-ktor-fit-extensions) plugin to get the IDE to prompt for the `create(client)` function.
+
+<img width="348" alt="image" src="https://github.com/qdsfdhvh/ktor-fit/assets/17807925/5b64ce86-d145-40ef-b727-0f01a422f50c">
 
 ## Thx
 
