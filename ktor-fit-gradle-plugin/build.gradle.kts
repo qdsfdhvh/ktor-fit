@@ -17,7 +17,7 @@ dependencies {
 }
 
 mavenPublishing {
-  publishToMavenCentral(SonatypeHost.S01, automaticRelease = false)
+  publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
   signAllPublications()
   @Suppress("UnstableApiUsage")
   pom {

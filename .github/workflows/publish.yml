@@ -35,5 +35,3 @@ jobs:
             ./gradlew publish --rerun-tasks --stacktrace --no-configuration-cache
             cd ktor-fit-gradle-plugin
             ./gradlew publish --rerun-tasks --stacktrace --no-configuration-cache
-            cd ..
-            ./gradlew closeAndReleaseRepository --stacktrace --no-configuration-cache
