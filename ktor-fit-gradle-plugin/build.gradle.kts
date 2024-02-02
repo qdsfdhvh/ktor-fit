@@ -1,3 +1,5 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
   `java-gradle-plugin`
   alias(libs.plugins.kotlin.jvm)
@@ -14,10 +16,19 @@ dependencies {
   compileOnly(kotlin("gradle-plugin-api"))
 }
 
+mavenPublishing {
+  publishToMavenCentral(SonatypeHost.S01, automaticRelease = false)
+  signAllPublications()
+  @Suppress("UnstableApiUsage")
+  pom {
+    description.set("use ktor like retrofit.")
+  }
+}
+
 gradlePlugin {
   plugins {
     create("ktorfitGradlePlugin") {
-      id = "io.github.qdsfdhvh.ktorfit"
+      id = "io.github.qdsfdhvh.ktor-fit-plugin"
       implementationClass = "io.github.seiko.ktorfit.plugin.KtorfitGradlePlugin"
     }
   }

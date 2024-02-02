@@ -3,7 +3,7 @@ plugins {
   alias(libs.plugins.kotlin.multiplatform)
   alias(libs.plugins.compose.multiplatform)
   alias(libs.plugins.ksp)
-  id("io.github.qdsfdhvh.ktorfit")
+  id("io.github.qdsfdhvh.ktor-fit-plugin")
 }
 
 kotlin {

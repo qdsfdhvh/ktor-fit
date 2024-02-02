@@ -20,10 +20,20 @@ jobs:
           java-version: 17
 
       - name: Publish to MavenCentral
-        run: ./gradlew publishAllPublicationsToMavenCentralRepository --stacktrace --no-daemon --no-parallel
+        uses: nick-fields/retry@v2.8.3
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.NEXUS_PASSWORD }}
+        with:
+          max_attempts: 3
+          retry_on: error
+          timeout_minutes: 20
+          command: |
+            ./gradlew publish --rerun-tasks --stacktrace --no-configuration-cache
+            cd ktor-fit-gradle-plugin
+            ./gradlew publish --rerun-tasks --stacktrace --no-configuration-cache
+            cd ..
+            ./gradlew closeAndReleaseRepository --stacktrace --no-configuration-cache
