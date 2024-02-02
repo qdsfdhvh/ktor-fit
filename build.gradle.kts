@@ -31,7 +31,7 @@ allprojects {
   plugins.withId("com.vanniktech.maven.publish") {
     @Suppress("UnstableApiUsage")
     configure<MavenPublishBaseExtension> {
-      publishToMavenCentral(SonatypeHost.S01, automaticRelease = false)
+      publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
       signAllPublications()
       pom {
         name.set(project.name)
