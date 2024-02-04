@@ -1,42 +1,11 @@
 plugins {
   alias(libs.plugins.android.application)
-  alias(libs.plugins.kotlin.multiplatform)
-  alias(libs.plugins.compose.multiplatform)
+  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.ksp)
   id("io.github.qdsfdhvh.ktor-fit-plugin")
 }
 
 kotlin {
-  androidTarget()
-  jvm()
-  sourceSets {
-    all {
-      languageSettings {
-        languageVersion = "2.0"
-      }
-    }
-    commonMain {
-      dependencies {
-        implementation(compose.runtime)
-        implementation(compose.material3)
-        implementation(projects.ktorFitAnnotation)
-        implementation(libs.bundles.ktor)
-        implementation(libs.ktor.client.okhttp)
-      }
-    }
-    androidMain {
-      dependencies {
-        implementation("androidx.activity:activity-compose:1.9.0-alpha01")
-      }
-    }
-  }
-  targets.all {
-    compilations.all {
-      compilerOptions.configure {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-      }
-    }
-  }
   jvmToolchain(17)
 }
 
@@ -76,12 +45,20 @@ android {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
   }
-  sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-  sourceSets["main"].res.srcDirs("src/androidMain/res")
-  sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+  buildFeatures {
+    compose = true
+  }
+  composeOptions {
+    kotlinCompilerExtensionVersion = "1.5.6"
+  }
 }
 
 dependencies {
-  add("kspAndroid", projects.ktorFitKsp)
-  add("kspJvm", projects.ktorFitKsp)
+  implementation("androidx.activity:activity-compose:1.9.0-alpha01")
+  implementation("androidx.compose.material3:material3:1.1.2")
+
+  implementation(libs.bundles.ktor)
+  implementation(libs.ktor.client.okhttp)
+  implementation(projects.ktorFitAnnotation)
+  ksp(projects.ktorFitKsp)
 }

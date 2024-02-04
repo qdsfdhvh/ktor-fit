@@ -36,8 +36,7 @@ class MainActivity : ComponentActivity() {
                   url("https://www.wanandroid.com/")
                 }
               }
-              // val api = WanAndroidService1(client)
-              val api = WanAndroidService2.create(client)
+              val api = WanAndroidService.create(client)
               value = api.articleList()
             }
             Text(text)

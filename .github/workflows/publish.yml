@@ -19,19 +19,28 @@ jobs:
         with:
           java-version: 17
 
-      - name: Publish to MavenCentral
-        uses: nick-fields/retry@v2.8.3
+      - name: Publish Ktor to MavenCentral
+        run: ./gradlew publishAllPublicationsToMavenCentralRepository --rerun-tasks  --stacktrace --no-configuration-cache --no-daemon --no-parallel
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.NEXUS_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.NEXUS_PASSWORD }}
-        with:
-          max_attempts: 3
-          retry_on: error
-          timeout_minutes: 20
-          command: |
-            ./gradlew publish --rerun-tasks --stacktrace --no-configuration-cache
-            cd ktor-fit-gradle-plugin
-            ./gradlew publish --rerun-tasks --stacktrace --no-configuration-cache
+
+      - name: Publish Ktor-Plugin to MavenCentral
+        run: ./gradlew :ktor-fit-gradle-plugin:publishAllPublicationsToMavenCentralRepository --rerun-tasks --stacktrace --no-configuration-cache --no-daemon --no-parallel
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.NEXUS_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.NEXUS_PASSWORD }}
+
+      - name: Publish Ktor-IDEA-Plugin to MavenCentral
+        run: ./gradlew :ktor-fit-idea-plugin:publishPlugin --rerun-tasks --stacktrace --no-configuration-cache --no-daemon --no-parallel
+        env:
+          IDEA_CERTIFICATE_CHAIN: ${{ secrets.IDEA_CERTIFICATE_CHAIN }}
+          IDEA_PRIVATE_KEY: ${{ secrets.IDEA_PRIVATE_KEY }}
+          IDEA_PRIVATE_KEY_PASSWORD: ${{ secrets.IDEA_PRIVATE_KEY_PASSWORD }}
+          IDEA_INTELLIJ_TOKEN: ${{ secrets.IDEA_INTELLIJ_TOKEN }}
