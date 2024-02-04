@@ -5,6 +5,7 @@ plugins {
   alias(libs.plugins.android.application) apply false
   alias(libs.plugins.android.library) apply false
   alias(libs.plugins.kotlin.multiplatform) apply false
+  alias(libs.plugins.kotlin.android) apply false
   alias(libs.plugins.kotlin.jvm) apply false
   alias(libs.plugins.maven.publish) apply false
   alias(libs.plugins.spotless)
@@ -31,7 +32,7 @@ allprojects {
   plugins.withId("com.vanniktech.maven.publish") {
     @Suppress("UnstableApiUsage")
     configure<MavenPublishBaseExtension> {
-      publishToMavenCentral(SonatypeHost.S01, automaticRelease = true)
+      publishToMavenCentral(SonatypeHost.S01, automaticRelease = false)
       signAllPublications()
       pom {
         name.set(project.name)
