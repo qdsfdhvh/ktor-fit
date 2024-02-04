@@ -2,7 +2,6 @@ package com.seiko.ktorfit.sample
 
 import io.github.seiko.ktorfit.annotation.generator.GenerateApi
 import io.github.seiko.ktorfit.annotation.http.GET
-import io.ktor.client.HttpClient
 
 interface WanAndroidApi {
   @GET("article/list/1/json")
