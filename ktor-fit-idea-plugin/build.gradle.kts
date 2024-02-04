@@ -42,22 +42,35 @@ tasks {
     archiveFileName = "$pluginName-${project.version}.zip"
   }
 
+  signPlugin {
+    inputArchiveFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}.zip").get().asFile)
+    outputArchiveFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}-signed.zip").get().asFile)
+  }
+
+  publishPlugin {
+    distributionFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}-signed.zip").get().asFile)
+  }
+
   val file = project.file("signing.properties")
   if (file.exists()) {
     val signingProp = Properties()
     signingProp.load(file.inputStream())
-
     signPlugin {
-      certificateChainFile.set(file(signingProp.getProperty("CERTIFICATE_CHAIN")))
-      privateKeyFile.set(file(signingProp.getProperty("PRIVATE_KEY")))
+      certificateChainFile.set(file(signingProp.getProperty("CERTIFICATE_CHAIN_FILE")))
+      privateKeyFile.set(file(signingProp.getProperty("PRIVATE_KEY_FILE")))
       password.set(signingProp.getProperty("PRIVATE_KEY_PASSWORD"))
-      inputArchiveFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}.zip").get().asFile)
-      outputArchiveFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}-signed.zip").get().asFile)
     }
-
     publishPlugin {
-      distributionFile.set(layout.buildDirectory.file("distributions/$pluginName-${project.version}-signed.zip").get().asFile)
       token.set(signingProp.getProperty("INTELLIJ_TOKEN"))
+    }
+  } else {
+    signPlugin {
+      certificateChain.set(System.getProperty("IDEA_CERTIFICATE_CHAIN"))
+      privateKey.set(System.getProperty("IDEA_PRIVATE_KEY"))
+      password.set(System.getProperty("IDEA_PRIVATE_KEY_PASSWORD"))
+    }
+    publishPlugin {
+      token.set(System.getProperty("IDEA_INTELLIJ_TOKEN"))
     }
   }
 }
