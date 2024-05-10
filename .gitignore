@@ -51,3 +51,6 @@ local.properties
 
 # Kotlin
 .kotlin/
+
+# Gradle
+include-build/
