@@ -11,6 +11,13 @@ kotlin {
     }
   }
   jvmToolchain(17)
+  tasks {
+    test {
+      // KSP2 needs more memory to run
+      minHeapSize = "1024m"
+      maxHeapSize = "1024m"
+    }
+  }
 }
 
 dependencies {

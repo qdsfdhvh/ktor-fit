@@ -5,12 +5,25 @@ import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspIncremental
 import com.tschuchort.compiletesting.kspIncrementalLog
 import com.tschuchort.compiletesting.symbolProcessorProviders
+import com.tschuchort.compiletesting.useKsp2
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCompilerApi::class)
-class SimpleTest {
+@RunWith(Parameterized::class)
+class SimpleTest(private val useKSP2: Boolean) {
+
+  companion object {
+    @Parameterized.Parameters(name = "useKSP2={0}")
+    @JvmStatic
+    fun data() = arrayOf(
+      arrayOf(true),
+      arrayOf(false),
+    )
+  }
 
   @Test
   fun `expect_class_simple_test01`() {
@@ -24,6 +37,7 @@ class SimpleTest {
         import io.github.seiko.ktorfit.annotation.http.Query
         import io.ktor.client.HttpClient
 
+        @Suppress("NO_ACTUAL_FOR_EXPECT")
         @GenerateApi
         expect class TestService(client: HttpClient) {
           @GET("path/{id}")
@@ -40,6 +54,7 @@ class SimpleTest {
       inheritClassPath = true
       kspIncremental = true
       kspIncrementalLog = true
+      multiplatform = true
     }.compile()
     assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
   }
@@ -67,6 +82,11 @@ class SimpleTest {
       """.trimIndent(),
     )
     val compilation = KotlinCompilation().apply {
+      if (useKSP2) {
+        useKsp2()
+      } else {
+        languageVersion = "1.9"
+      }
       sources = listOf(manualSource)
       symbolProcessorProviders = mutableListOf(KtorfitProcessorProvider())
       inheritClassPath = true
