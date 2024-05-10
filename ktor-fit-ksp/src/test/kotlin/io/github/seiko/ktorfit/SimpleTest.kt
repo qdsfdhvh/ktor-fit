@@ -36,7 +36,7 @@ class SimpleTest {
     )
     val result = KotlinCompilation().apply {
       sources = listOf(manualSource)
-      symbolProcessorProviders = listOf(KtorfitProcessorProvider())
+      symbolProcessorProviders = mutableListOf(KtorfitProcessorProvider())
       inheritClassPath = true
       kspIncremental = true
       kspIncrementalLog = true
@@ -68,7 +68,7 @@ class SimpleTest {
     )
     val compilation = KotlinCompilation().apply {
       sources = listOf(manualSource)
-      symbolProcessorProviders = listOf(KtorfitProcessorProvider())
+      symbolProcessorProviders = mutableListOf(KtorfitProcessorProvider())
       inheritClassPath = true
       kspIncremental = true
       kspIncrementalLog = true
