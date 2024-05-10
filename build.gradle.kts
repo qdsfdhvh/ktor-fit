@@ -42,8 +42,21 @@ allprojects {
   }
 
   configurations.configureEach {
-    resolutionStrategy.dependencySubstitution {
-      substitute(module("io.github.qdsfdhvh:ktor-fit-kcp")).using(project(":ktor-fit-kcp"))
+    resolutionStrategy {
+      dependencySubstitution {
+        substitute(module("io.github.qdsfdhvh:ktor-fit-kcp")).using(project(":ktor-fit-kcp"))
+      }
+
+      eachDependency {
+        if (requested.group == "org.jetbrains.kotlin" && requested.name.startsWith("kotlin-")) {
+          useVersion(libs.versions.kotlin.get())
+          because("force kotlin version")
+        }
+        if (requested.group == "org.jetbrains.kotlinx" && requested.name.startsWith("kotlinx-coroutines")) {
+          useVersion(libs.versions.kotlinxCoroutines.get())
+          because("force kotlinx-coroutines version")
+        }
+      }
     }
   }
 }
