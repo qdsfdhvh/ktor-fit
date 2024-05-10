@@ -4,7 +4,6 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspIncremental
 import com.tschuchort.compiletesting.kspIncrementalLog
-import com.tschuchort.compiletesting.kspSourcesDir
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import kotlin.test.Test
@@ -77,7 +76,5 @@ class SimpleTest {
 
     val result = compilation.compile()
     assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
-
-    compilation.kspSourcesDir.resolve("")
   }
 }
