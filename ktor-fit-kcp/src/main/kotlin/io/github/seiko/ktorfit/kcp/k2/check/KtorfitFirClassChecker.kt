@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.descriptors.isInterface
 import org.jetbrains.kotlin.diagnostics.DiagnosticReporter
 import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirClassChecker
 import org.jetbrains.kotlin.fir.declarations.FirClass
@@ -15,7 +16,7 @@ import org.jetbrains.kotlin.fir.extensions.predicateBasedProvider
 
 internal class KtorfitFirClassChecker(
   private val session: FirSession,
-) : FirClassChecker() {
+) : FirClassChecker(MppCheckerKind.Common) {
 
   companion object {
     private val PREDICATE = LookupPredicate.create {

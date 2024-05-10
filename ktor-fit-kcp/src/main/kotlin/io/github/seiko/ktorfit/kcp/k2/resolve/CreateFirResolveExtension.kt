@@ -6,7 +6,6 @@ import org.jetbrains.kotlin.GeneratedDeclarationKey
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.analysis.checkers.getContainingClassSymbol
-import org.jetbrains.kotlin.fir.analysis.checkers.getContainingDeclarationSymbol
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
 import org.jetbrains.kotlin.fir.declarations.utils.isInterface
 import org.jetbrains.kotlin.fir.extensions.FirDeclarationGenerationExtension
@@ -86,7 +85,7 @@ internal class CreateFirResolveExtension(
       return emptySet()
     }
     val origin = classSymbol.origin as? FirDeclarationOrigin.Plugin
-    logger.i { "k2: add create function in ${classSymbol.getContainingDeclarationSymbol(session)?.name}.Companion" }
+    logger.i { "k2: add create function in ${classSymbol.getContainingClassSymbol(session)?.name}.Companion" }
     return if (origin?.key == Key) {
       setOf(KtorfitNames.CREATE_METHOD, SpecialNames.INIT)
     } else {
