@@ -1,6 +1,7 @@
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.kotlin.composeCompiler)
   alias(libs.plugins.ksp)
   id("io.github.qdsfdhvh.ktor-fit-plugin")
 }
@@ -45,12 +46,11 @@ android {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
   }
-  buildFeatures {
-    compose = true
-  }
-  composeOptions {
-    kotlinCompilerExtensionVersion = "1.5.6"
-  }
+}
+
+composeCompiler {
+  // https://medium.com/androiddevelopers/jetpack-compose-strong-skipping-mode-explained-cbdb2aa4b900
+  enableStrongSkippingMode = true
 }
 
 dependencies {

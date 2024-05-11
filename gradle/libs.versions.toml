@@ -1,18 +1,18 @@
 [versions]
-agp = "8.2.0"
-kotlin = "1.9.21"
-ksp = "1.9.21-1.0.16"
+agp = "8.4.0"
+kotlin = "2.0.0-RC2"
+ksp = "2.0.0-RC2-1.0.20"
 kotlinpoet = "1.14.2"
-kotlin-compile-testing = "0.4.0"
-kotlinx-coroutines = "1.8.0-RC2"
-publish = "0.26.0"
-spotless = "6.23.3"
-dokka = "1.9.10"
+kotlinCompileTesting = "0.5.0-alpha07"
+kotlinxCoroutines = "1.8.0"
+publish = "0.28.0"
+spotless = "6.25.0"
+dokka = "1.9.20"
 ktlint = "0.49.1"
-ktor = "2.3.7"
-compose-multiplatform = "1.5.11"
+ktor = "2.3.11"
+composeMultiplatform = "1.6.2"
 buildconfig = "4.0.4"
-intelliJPlugin = "1.17.0"
+intelliJPlugin = "1.17.3"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -20,11 +20,12 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
-compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
 intelliJPlugin = { id = "org.jetbrains.intellij", version.ref = "intelliJPlugin" }
 
@@ -32,9 +33,9 @@ intelliJPlugin = { id = "org.jetbrains.intellij", version.ref = "intelliJPlugin"
 ksp-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version.ref = "kotlinpoet" }
 kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
-kotlin-compile-testing = { module = "dev.zacsweers.kctfork:core", version.ref = "kotlin-compile-testing" }
-kotlin-compile-testing-ksp = { module = "dev.zacsweers.kctfork:ksp", version.ref = "kotlin-compile-testing" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlin-compile-testing = { module = "dev.zacsweers.kctfork:core", version.ref = "kotlinCompileTesting" }
+kotlin-compile-testing-ksp = { module = "dev.zacsweers.kctfork:ksp", version.ref = "kotlinCompileTesting" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }

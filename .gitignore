@@ -48,3 +48,9 @@ publish.properties
 
 docs
 local.properties
+
+# Kotlin
+.kotlin/
+
+# Gradle
+include-build/
