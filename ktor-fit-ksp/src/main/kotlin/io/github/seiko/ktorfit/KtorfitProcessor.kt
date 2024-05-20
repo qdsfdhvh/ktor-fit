@@ -1,6 +1,7 @@
 package io.github.seiko.ktorfit
 
 import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -11,9 +12,10 @@ import io.github.seiko.ktorfit.annotation.generator.GenerateApi
 class KtorfitProcessor(environment: SymbolProcessorEnvironment) : SymbolProcessor {
 
   private val codeGenerator: CodeGenerator = environment.codeGenerator
+  private val logger: KSPLogger = environment.logger
 
   override fun process(resolver: Resolver): List<KSAnnotated> {
-    val classVisitor = KtorfitClassVisitor(codeGenerator)
+    val classVisitor = KtorfitClassVisitor(codeGenerator, logger)
     resolver
       .getSymbolsWithAnnotation(GENERATE_API_ANNOTATION_NAME)
       .filterIsInstance<KSClassDeclaration>()
