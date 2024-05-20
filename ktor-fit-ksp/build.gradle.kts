@@ -8,6 +8,7 @@ kotlin {
   sourceSets.all {
     languageSettings {
       optIn("com.google.devtools.ksp.KspExperimental")
+      optIn("org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi")
     }
   }
   jvmToolchain(17)

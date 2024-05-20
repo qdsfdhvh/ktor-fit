@@ -6,13 +6,11 @@ import com.tschuchort.compiletesting.kspIncremental
 import com.tschuchort.compiletesting.kspIncrementalLog
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import com.tschuchort.compiletesting.useKsp2
-import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCompilerApi::class)
 @RunWith(Parameterized::class)
 class SimpleTest(private val useKSP2: Boolean) {
 
