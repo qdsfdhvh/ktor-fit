@@ -9,4 +9,7 @@ package io.github.seiko.ktorfit.annotation.http
  * @see FieldMap
  */
 @Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class Field(val value: String, val encoded: Boolean = false)
+annotation class Field(
+  val value: String = "",
+  val encoded: Boolean = false,
+)
