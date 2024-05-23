@@ -10,8 +10,8 @@ spotless = "6.25.0"
 dokka = "1.9.20"
 ktlint = "0.49.1"
 ktor = "2.3.11"
-composeMultiplatform = "1.6.2"
-buildconfig = "4.0.4"
+composeMultiplatform = "1.6.10"
+buildconfig = "5.3.5"
 intelliJPlugin = "1.17.3"
 
 [plugins]
