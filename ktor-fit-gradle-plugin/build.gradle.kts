@@ -21,6 +21,7 @@ mavenPublishing {
   signAllPublications()
   @Suppress("UnstableApiUsage")
   pom {
+    name.set(project.name)
     description.set("use ktor like retrofit.")
   }
 }
