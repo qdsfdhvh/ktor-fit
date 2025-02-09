@@ -507,7 +507,7 @@ class KtorfitClassVisitor(
         function.parameters.forEach { parameter ->
           parameter.getAnnotationsByType(Part::class).firstOrNull()?.let {
             functionBuilder.addStatement(
-              "append(%S, %S)",
+              "append(%S, %L)",
               it.value,
               parameter.shoreName,
             )
